@@ -36,6 +36,7 @@ public partial class HUD : CanvasLayer
         // 订阅全局事件
         _gameManager.Connect("wave_started", Callable.From((int wave) => OnWaveStarted(wave)));
         _gameManager.Connect("resources_changed", Callable.From((int amount) => OnResourcesChanged(amount)));
+        _gameManager.Connect("level_completed", Callable.From(OnLevelCompleted));
 
         // 初始化
         UpdateWaveDisplay();
@@ -52,6 +53,18 @@ public partial class HUD : CanvasLayer
     private void OnResourcesChanged(int amount)
     {
         UpdateResourceDisplay(amount);
+    }
+
+    private void OnLevelCompleted()
+    {
+        if (_waveLabel != null)
+        {
+            _waveLabel.Text = "🎉 关卡胜利！";
+        }
+        if (_resourceLabel != null)
+        {
+            _resourceLabel.Text = "通关奖励已发放";
+        }
     }
 
     private void UpdateWaveDisplay()
