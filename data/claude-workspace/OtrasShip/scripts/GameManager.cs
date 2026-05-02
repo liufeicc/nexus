@@ -44,7 +44,7 @@ public partial class GameManager : Node
     // ========== Signals ==========
 
     [Signal]
-    public delegate void GameStateChangedEventHandler(GameState newState);
+    public delegate void GameStateChangedEventHandler(int newState);
 
     [Signal]
     public delegate void ResourcesChangedEventHandler(int newAmount);
