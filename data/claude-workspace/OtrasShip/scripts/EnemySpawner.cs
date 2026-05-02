@@ -169,7 +169,7 @@ public partial class EnemySpawner : Node2D
         enemy.GlobalPosition = new Vector2(SpawnX, spawnY);
 
         // 订阅死亡事件
-        enemy.Connect("enemy_died", Callable.From((int reward) => OnEnemyDied()));
+        enemy.Connect("EnemyDied", Callable.From((int reward) => OnEnemyDied()));
 
         GetTree().Root.AddChild(enemy);
         _activeEnemies++;

@@ -33,10 +33,10 @@ public partial class HUD : CanvasLayer
 
         _gameManager = GetNode<GameManager>("/root/GameManager");
 
-        // 订阅全局事件
-        _gameManager.Connect("wave_started", Callable.From((int wave) => OnWaveStarted(wave)));
-        _gameManager.Connect("resources_changed", Callable.From((int amount) => OnResourcesChanged(amount)));
-        _gameManager.Connect("level_completed", Callable.From(OnLevelCompleted));
+        // 订阅全局事件（注意：C# 信号名称使用 PascalCase）
+        _gameManager.Connect("WaveStarted", Callable.From((int wave) => OnWaveStarted(wave)));
+        _gameManager.Connect("ResourcesChanged", Callable.From((int amount) => OnResourcesChanged(amount)));
+        _gameManager.Connect("LevelCompleted", Callable.From(OnLevelCompleted));
 
         // 初始化
         UpdateWaveDisplay();
