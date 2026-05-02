@@ -25,8 +25,8 @@ public partial class Bullet : Area2D
 
     public override void _Ready()
     {
-        // 碰撞后触发回调
-        BodyEntered += OnBodyEntered;
+        // Area2D 之间的碰撞通过 AreaEntered 检测
+        AreaEntered += OnAreaEntered;
     }
 
     public override void _Process(double delta)
@@ -55,17 +55,17 @@ public partial class Bullet : Area2D
     }
 
     /// <summary>
-    /// 碰撞回调：命中实体时扣血
+    /// 碰撞回调：命中 Area2D 实体时扣血（如敌人）
     /// </summary>
-    private void OnBodyEntered(Node2D body)
+    private void OnAreaEntered(Area2D area)
     {
         if (_markedForDeletion) return;
         _markedForDeletion = true;
 
         // 如果碰撞体有 TakeDamage 方法，调用它
-        if (body.HasMethod("TakeDamage"))
+        if (area.HasMethod("TakeDamage"))
         {
-            body.Call("TakeDamage", Damage);
+            area.Call("TakeDamage", Damage);
         }
 
         QueueFree();
