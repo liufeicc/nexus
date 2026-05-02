@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/Enemy.cs" id="1"]
+
+[node name="Enemy" type="Area2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("EnemyShape")
+
+[node name="Sprite" type="ColorRect" parent="."]
+offset_left = -25.0
+offset_top = -25.0
+offset_right = 25.0
+offset_bottom = 25.0
+color = Color(0.96, 0.26, 0.26, 0.7)
+
+[sub_resource type="RectangleShape2D" id="EnemyShape"]
+size = Vector2(50, 50)
