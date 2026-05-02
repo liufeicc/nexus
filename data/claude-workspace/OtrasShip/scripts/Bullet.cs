@@ -27,6 +27,9 @@ public partial class Bullet : Area2D
     {
         // Area2D 之间的碰撞通过 AreaEntered 检测
         AreaEntered += OnAreaEntered;
+
+        // 触发绘制
+        QueueRedraw();
     }
 
     public override void _Process(double delta)
@@ -42,6 +45,14 @@ public partial class Bullet : Area2D
         {
             QueueFree();
         }
+    }
+
+    public override void _Draw()
+    {
+        // 绘制 12x6 橙黄色子弹，中心在原点
+        var color = new Color(0.96f, 0.68f, 0.33f, 1f);
+        var rect = new Rect2(-6, -3, 12, 6);
+        DrawRect(rect, color);
     }
 
     /// <summary>

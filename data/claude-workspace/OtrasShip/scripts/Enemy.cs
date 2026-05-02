@@ -38,6 +38,17 @@ public partial class Enemy : Area2D
         // 被子弹碰撞时触发
         BodyEntered += OnBodyEntered;
         AreaEntered += OnAreaEntered;
+
+        // 触发绘制
+        QueueRedraw();
+    }
+
+    public override void _Draw()
+    {
+        // 绘制 50x50 红色半透明方块，中心在原点
+        var color = new Color(0.96f, 0.26f, 0.26f, 0.7f);
+        var rect = new Rect2(-25, -25, 50, 50);
+        DrawRect(rect, color);
     }
 
     public override void _Process(double delta)

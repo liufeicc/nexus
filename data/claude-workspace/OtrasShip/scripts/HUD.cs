@@ -23,6 +23,9 @@ public partial class HUD : CanvasLayer
     /// <summary>当前波次</summary>
     private int _currentWave = 0;
 
+    /// <summary>星舰引用</summary>
+    private Starship? _starship;
+
     public override void _Ready()
     {
         // 获取节点引用
@@ -33,6 +36,20 @@ public partial class HUD : CanvasLayer
 
         _gameManager = GetNode<GameManager>("/root/GameManager");
 
+        // 获取星舰引用并订阅 HP 信号
+        var starshipNode = GetNode("/root/Main/Starship");
+        if (starshipNode != null && starshipNode.HasMethod("UpdateHpDisplay"))
+        {
+            // 直接调用星舰的方法来更新 HUD
+            _starship = starshipNode as Starship;
+            if (_starship != null)
+            {
+                _starship.Connect("ShipDamaged", Callable.From((float current, float max) => OnShipDamaged(current, max)));
+                // 初始化 HP
+                _shipHp = _starship.ShipMaxHp;
+            }
+        }
+
         // 订阅全局事件（注意：C# 信号名称使用 PascalCase）
         _gameManager.Connect("WaveStarted", Callable.From((int wave) => OnWaveStarted(wave)));
         _gameManager.Connect("ResourcesChanged", Callable.From((int amount) => OnResourcesChanged(amount)));
@@ -41,6 +58,13 @@ public partial class HUD : CanvasLayer
         // 初始化
         UpdateWaveDisplay();
         UpdateResourceDisplay(_gameManager.Resources);
+        UpdateHpDisplay();
+    }
+
+    private void OnShipDamaged(float current, float max)
+    {
+        _shipHp = current;
+        _shipMaxHp = max;
         UpdateHpDisplay();
     }
 
