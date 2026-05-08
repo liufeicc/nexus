@@ -57,10 +57,21 @@ export type {
   SecurityScanResult,
 } from './skill'
 
+// Task 系统相关
+export type {
+  ParsedTask,
+  TaskMeta,
+  TaskContent,
+  TaskManageAction,
+  TaskManageResult,
+} from './task'
+
 // 智能体相关
 export type {
   AgentConfig,
   AgentMessage,
+  AttachedFile,
+  ContentBlock,
   ToolCall,
   MessageRole,
   ToolParameterProperty,

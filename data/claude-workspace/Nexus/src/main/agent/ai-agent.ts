@@ -16,6 +16,7 @@ import {
   AgentEvent,
   IterationBudget,
   McpServerConfig,
+  AttachedFile,
 } from '../../core/types/agent'
 import { MemoryManagerConfig } from '../../core/types/memory'
 import { LLMClient } from './llm-client'
@@ -30,11 +31,18 @@ import { AgentSessionState } from './session-state'
 import { bindFileToolSession, bindSearchState } from './tools/file-tools'
 import { MemoryManager } from './memory/memory-manager'
 import { DatabaseService } from '../services/database.service'
+import { AgentMessageDAO } from '../db/agent-message.dao'
 import { logger } from '../utils/logger'
 import { SkillManager } from './skills/skill-manager'
 import { SkillPromptInjector } from './skills/skill-prompt-injector'
 import { createSkillTools } from './skills/skills-tool'
 import { createSkillManageTool } from './skills/skill-manage-tool'
+import { TaskManager } from './tasks/task-manager'
+import { createTaskTools } from './tasks/tasks-tool'
+import { createTaskManageTool } from './tasks/task-manage-tool'
+import { BackgroundCompressor } from './background-compressor'
+import { resolveContextLength } from './model-metadata'
+import { estimateMessageTokens } from './context-compressor'
 
 /**
  * 从数据库读取记忆配置
@@ -119,6 +127,9 @@ export class AIAgent {
   // ── 中断 ──
   private interruptRequested: boolean = false
 
+  /** 工具执行中止控制器，interrupt() 时触发，用于终止正在运行的长时间工具 */
+  private toolAbortController: AbortController | null = null
+
   // ── 事件管理 ──
   private eventManager: AgentEventManager
 
@@ -135,6 +146,12 @@ export class AIAgent {
   // ── 会话 ──
   readonly sessionId: string
 
+  // ── 对话主题 ──
+  private topicId: string = ''
+
+  // ── 当前 turn 索引 ──
+  private currentTurnIndex: number = 0
+
   // ── 记忆系统 ──
   private memoryManager: MemoryManager | null = null
   private nexusSessionId: string
@@ -142,6 +159,15 @@ export class AIAgent {
   // ── Skill 系统 ──
   private skillManager: SkillManager | null = null
   private skillPromptInjector: SkillPromptInjector | null = null
+
+  // ── Task 系统 ──
+  private taskManager: TaskManager | null = null
+
+  // ── 后台压缩器 ──
+  private _backgroundCompressor: BackgroundCompressor | null = null
+
+  // ── 后台压缩标记：下次 run() 时重新从 DB 加载历史 ──
+  private needsReload: boolean = false
 
   constructor(options: AIAgentOptions) {
     this.config = {
@@ -170,6 +196,7 @@ export class AIAgent {
     this.iterationBudget = new IterationBudget(this.config.maxIterations)
     this.eventManager = new AgentEventManager()
     this.sessionState = new AgentSessionState()
+    this.sessionState.setCurrentModel(this.config.model)
 
     // 创建 LLM 桥接
     this.llmBridge = createLlmBridge(
@@ -251,6 +278,23 @@ export class AIAgent {
     return this.skillPromptInjector.buildBlock()
   }
 
+  /**
+   * 初始化 Task 系统
+   *
+   * 实例化 TaskManager，注册 task 查询和管理工具。
+   * 可选传入 tasksDir 覆盖默认目录。
+   */
+  initTasks(tasksDir?: string): void {
+    this.taskManager = new TaskManager(tasksDir)
+
+    // 注册 task 查询工具
+    const taskTools = createTaskTools(this.taskManager)
+    this.registerTools(taskTools)
+
+    // 注册 task 管理工具
+    this.registerTool(createTaskManageTool(this.taskManager))
+  }
+
   // ==================== 记忆系统 ====================
 
   /**
@@ -286,7 +330,7 @@ export class AIAgent {
     logger.info('[AIAgent] ToolRegistry 当前工具:', this.toolRegistry.size, '个')
 
     // 后台预取（空查询，仅预热）
-    this.memoryManager.prefetch('').catch(() => {})
+    // 已移除 — 空查询预取无意义
 
     logger.info('[AIAgent] 记忆系统已初始化')
   }
@@ -345,8 +389,14 @@ export class AIAgent {
   // ==================== 中断 ====================
 
   interrupt(): void {
+    logger.info(`[AIAgent] interrupt() 被调用, llmClient.abortController 存在=${!!this.llmClient['abortController']}, toolAbortController 存在=${!!this.toolAbortController}`)
     this.interruptRequested = true
     this.llmClient.abort()
+    // 中止正在执行的长时间工具（如终端命令）
+    if (this.toolAbortController) {
+      this.toolAbortController.abort()
+      logger.info('[AIAgent] toolAbortController 已 abort')
+    }
   }
 
   clearInterrupt(): void {
@@ -357,13 +407,42 @@ export class AIAgent {
 
   async run(
     userMessage: string,
+    attachments?: AttachedFile[],
     conversationHistory?: AgentMessage[],
     useStream: boolean = true,
   ): Promise<AgentRunResult> {
+    // 重置后自动重建记忆系统
+    if (!this.memoryManager && this.nexusSessionId) {
+      const memConfig = loadMemoryManagerConfig()
+      this.memoryManager = new MemoryManager(memConfig, this.nexusSessionId)
+      logger.info('[AIAgent] reset() 后自动重建记忆系统')
+    }
+
+    // 检查后台压缩器是否已替换 DB 数据，如果是则重新加载历史
+    if (this.needsReload) {
+      logger.info('[AIAgent] 检测到后台压缩完成，重新从 DB 加载历史')
+      this.needsReload = false
+      this.messages = []
+      this.previousSummary = null
+      this.topicId = ''
+    }
+
+    // 初始化或复用对话主题 ID
+    this.ensureTopicInitialized()
+
+    // 从数据库加载当前 topic 的历史消息
+    const dbHistory = this.loadConversationHistory()
+    // 如果调用方未传入历史，使用数据库历史
+    const effectiveHistory = conversationHistory && conversationHistory.length > 0
+      ? conversationHistory
+      : dbHistory
+
     // 重置状态
     this.interruptRequested = false
     this.apiCallCount = 0
     this.iterationBudget = new IterationBudget(this.config.maxIterations)
+    // 创建新的工具执行中止控制器（上一次的已被 abort 过，不能复用）
+    this.toolAbortController = new AbortController()
 
     // 构建运行循环所需的依赖
     const deps: RunLoopDeps = {
@@ -386,23 +465,32 @@ export class AIAgent {
       setMessages: (m) => { this.messages = m },
       iterationBudget: this.iterationBudget,
       interruptRequested: () => this.interruptRequested,
+      toolAbortSignal: this.toolAbortController.signal,
       lastPromptTokens: this.lastPromptTokens,
       setLastPromptTokens: (v) => { this.lastPromptTokens = v },
       previousSummary: this.previousSummary,
       setPreviousSummary: (v) => { this.previousSummary = v },
       summaryFailureCooldownUntil: this.summaryFailureCooldownUntil,
+      setSummaryFailureCooldownUntil: (v) => { this.summaryFailureCooldownUntil = v },
       getSystemPrompt: () => this.llmBridge.getSystemPrompt(),
       buildApiMessages: (sp) => this.llmBridge.buildApiMessages(sp),
       callLLMStream: (sp, msgs) => this.llmBridge.callLLMStream(sp, msgs),
       callLLMNonStream: (sp, msgs) => this.llmBridge.callLLMNonStream(sp, msgs),
+      // 消息持久化回调
+      saveMessage: (msg, turnIndex) => this.saveMessageToDb(msg, turnIndex),
+      markTurnComplete: (turnIndex) => this.markTurnComplete(turnIndex),
+      getMemoryContext: (q) => this.memoryManager?.retrieveForTurn(q) ?? '',
     }
 
     // 委托给运行循环
-    const result = await runAgentLoop(userMessage, conversationHistory, useStream, deps)
+    const result = await runAgentLoop(userMessage, attachments, effectiveHistory, useStream, deps)
 
     // 同步回写状态
     this.messages = result.messages
     this.apiCallCount = result.apiCalls
+
+    // 检查上下文是否需要请求后台压缩
+    this._signalBackgroundCompressionIfNeeded()
 
     // 记忆同步（turn-end 非阻塞持久化）
     if (this.memoryManager) {
@@ -411,8 +499,15 @@ export class AIAgent {
       )
       // 预取下一轮
       const lastUserMsg = [...this.messages].reverse().find(m => m.role === 'user')
-      if (lastUserMsg && typeof lastUserMsg.content === 'string') {
-        this.memoryManager.prefetch(lastUserMsg.content).catch(() => {})
+      if (lastUserMsg) {
+        const textContent = typeof lastUserMsg.content === 'string'
+          ? lastUserMsg.content
+          : Array.isArray(lastUserMsg.content)
+            ? lastUserMsg.content.find(b => b.type === 'text')?.text || ''
+            : ''
+        if (textContent) {
+          this.memoryManager.prefetch(textContent)
+        }
       }
     }
 
@@ -423,6 +518,160 @@ export class AIAgent {
 
   getMessages(): AgentMessage[] {
     return [...this.messages]
+  }
+
+  /**
+   * 获取当前对话主题 ID
+   */
+  getTopicId(): string {
+    return this.topicId
+  }
+
+  /**
+   * 清除当前对话历史（数据库 + 内存）
+   */
+  clearHistory(): void {
+    // 清除数据库中的全部对话历史
+    const dao = this.getAgentMessageDAO()
+    if (dao) {
+      dao.deleteAll()
+    }
+
+    // 清除内存中的消息
+    this.messages = []
+    this.previousSummary = null
+    this.summaryFailureCooldownUntil = 0
+    this.currentTurnIndex = 0
+
+    // 重置 topic，下次对话会重新生成
+    this.topicId = ''
+
+    logger.info('[AIAgent] 对话历史已全部清除')
+  }
+
+  /**
+   * 确保 topicId 已初始化。
+   * 如果当前有历史，复用最新 topic；否则生成新 topic。
+   */
+  private ensureTopicInitialized(): void {
+    if (this.topicId) return  // 已有 topic，复用
+
+    const dao = this.getAgentMessageDAO()
+    if (!dao) {
+      this.topicId = crypto.randomUUID()
+      return
+    }
+
+    const history = dao.loadLatestTopic(this.nexusSessionId)
+    if (history) {
+      this.topicId = history.topicId
+      logger.info(`[AIAgent] 复用历史 topic: ${this.topicId} (${history.messages.length} 条消息)`)
+    } else {
+      this.topicId = crypto.randomUUID()
+      logger.info(`[AIAgent] 创建新 topic: ${this.topicId}`)
+    }
+  }
+
+  /**
+   * 从数据库加载当前 topic 的历史消息
+   */
+  private loadConversationHistory(): AgentMessage[] {
+    const dao = this.getAgentMessageDAO()
+    if (!dao || !this.nexusSessionId) return []
+
+    const history = dao.loadLatestTopic(this.nexusSessionId)
+    if (!history) return []
+
+    // 设置 topicId 以便后续消息追加到同一 topic
+    this.topicId = history.topicId
+
+    logger.info(`[AIAgent] 从数据库加载历史: ${history.messages.length} 条消息`)
+    return history.messages
+  }
+
+  /**
+   * 保存单条消息到数据库
+   */
+  private saveMessageToDb(msg: AgentMessage, turnIndex: number): void {
+    this.currentTurnIndex = turnIndex
+    const dao = this.getAgentMessageDAO()
+    if (!dao || !this.topicId) return
+
+    try {
+      dao.saveMessage(this.topicId, this.nexusSessionId, msg, turnIndex)
+    } catch (err) {
+      logger.warn('[AIAgent] 保存消息失败:', err)
+    }
+  }
+
+  /**
+   * 标记当前 turn 为完整
+   */
+  private markTurnComplete(turnIndex: number): void {
+    const dao = this.getAgentMessageDAO()
+    if (!dao || !this.topicId) return
+
+    try {
+      dao.markTurnComplete(this.topicId, turnIndex)
+    } catch (err) {
+      logger.warn('[AIAgent] 标记 turn 完整失败:', err)
+    }
+  }
+
+  /**
+   * 获取 AgentMessageDAO（安全访问）
+   */
+  private getAgentMessageDAO(): AgentMessageDAO | null {
+    try {
+      const db = DatabaseService.getInstance()
+      if (!db) return null
+      return db.getAgentMessageDAO()
+    } catch {
+      return null
+    }
+  }
+
+  // ==================== 后台压缩 ====================
+
+  /**
+   * 注册后台压缩器实例
+   */
+  setBackgroundCompressor(compressor: BackgroundCompressor): void {
+    this._backgroundCompressor = compressor
+  }
+
+  /**
+   * 设置重新加载标记（由后台压缩器在压缩完成后调用）
+   */
+  setNeedsReload(value: boolean): void {
+    this.needsReload = value
+    logger.info(`[AIAgent] needsReload 已设为 ${value}`)
+  }
+
+  /**
+   * 检查当前上下文是否超过 50% 窗口，如果是则请求后台压缩
+   * 在每次 run() 结束时调用
+   */
+  private _signalBackgroundCompressionIfNeeded(): void {
+    if (!this._backgroundCompressor) {
+      return
+    }
+
+    const contextLength = resolveContextLength(this.config.model, this.config.contextLength)
+    const threshold = Math.floor(contextLength * 0.50)
+
+    const currentTokens = this.lastPromptTokens || estimateMessageTokens(this.messages)
+
+    if (currentTokens >= threshold) {
+      const topicId = this.getTopicId()
+      if (topicId && !this._backgroundCompressor.isCompressing) {
+        logger.info(
+          `[AIAgent] 上下文 ${currentTokens} tokens >= 50% 阈值 ${threshold}，` +
+          `请求后台压缩 topic=${topicId}`
+        )
+        this._backgroundCompressor.requestCompression(topicId)
+      }
+    }
   }
 
   reset(): void {
@@ -447,5 +696,8 @@ export class AIAgent {
     this.config = { ...this.config, ...partial }
     this.llmClient.updateConfig(partial)
     this.iterationBudget = new IterationBudget(this.config.maxIterations ?? 90)
+    if (partial.model) {
+      this.sessionState.setCurrentModel(partial.model)
+    }
   }
 }

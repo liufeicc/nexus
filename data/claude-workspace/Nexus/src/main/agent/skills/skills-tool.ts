@@ -97,6 +97,17 @@ function createSkillViewTool(skillManager: SkillManager): ToolDefinition {
         }
 
         const filePath = typeof args.file_path === 'string' ? args.file_path : undefined
+
+        // 前置路径安全校验（友好错误提示）
+        if (filePath) {
+          if (filePath.includes('..')) {
+            return { success: false, output: '错误: file_path 不能包含 ".." 路径组件' }
+          }
+          if (filePath.startsWith('/') || filePath.startsWith('\\')) {
+            return { success: false, output: '错误: file_path 必须是 skill 目录内的相对路径' }
+          }
+        }
+
         const result = skillManager.getSkillContent(name, filePath)
 
         // 构建输出

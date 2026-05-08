@@ -27,28 +27,6 @@ export function isWithinDirectory(targetPath: string, rootDir: string): boolean 
   return resolved === resolvedRoot || resolved.startsWith(resolvedRoot + path.sep)
 }
 
-// ==================== Prompt Injection 检测 ====================
-
-const INJECTION_PATTERNS = [
-  'ignore previous instructions',
-  'ignore all previous',
-  'you are now',
-  'disregard your',
-  'forget your instructions',
-  'new instructions:',
-  'system prompt:',
-  '<system>',
-  ']]>',
-]
-
-/**
- * 检测 prompt injection 模式
- */
-export function detectPromptInjection(content: string): string[] {
-  const lower = content.toLowerCase()
-  return INJECTION_PATTERNS.filter(p => lower.includes(p))
-}
-
 // ==================== 威胁模式匹配 ====================
 
 interface ThreatPattern {
@@ -67,6 +45,10 @@ const THREAT_PATTERNS: ThreatPattern[] = [
   { name: 'ignore_previous', pattern: /ignore\s+(all\s+)?previous\s+instructions?/i, severity: 'warning' },
   { name: 'role_hijack', pattern: /you\s+are\s+now\s+/i, severity: 'warning' },
   { name: 'system_prompt', pattern: /<system>|system\s*prompt\s*:/i, severity: 'critical' },
+  { name: 'disregard_your', pattern: /disregard\s+your/i, severity: 'warning' },
+  { name: 'forget_instructions', pattern: /forget\s+your\s+instructions?/i, severity: 'warning' },
+  { name: 'new_instructions', pattern: /new\s+instructions\s*:/i, severity: 'warning' },
+  { name: 'cdata_end', pattern: /\]\]>/, severity: 'info' },
 
   // 破坏性操作
   { name: 'rm_rf', pattern: /rm\s+-rf\s+\//i, severity: 'critical' },
@@ -114,10 +96,14 @@ const INVISIBLE_UNICODE = [
 ]
 
 /**
- * 完整安全扫描
+ * 扫描 skill 文件内容的安全性（威胁模式、prompt injection、不可见字符、文件大小）。
+ *
+ * 注意：本函数仅检查内容安全，不包含路径遍历验证。
+ * 调用方必须在读取文件前自行调用 `hasPathTraversal()` 和 `isWithinDirectory()`
+ * 以确保文件路径合法。
  *
  * @param content 文件内容
- * @param filePath 文件路径（用于日志）
+ * @param filePath 文件路径（仅用于错误日志）
  * @returns 扫描结果
  */
 export function scanSkillContent(content: string, filePath: string): SecurityScanResult {
@@ -143,12 +129,6 @@ export function scanSkillContent(content: string, filePath: string): SecuritySca
     }
   }
 
-  // 4. Prompt injection 检测
-  const injections = detectPromptInjection(content)
-  if (injections.length > 0) {
-    findings.push(...injections.map(i => `injection:${i}`))
-  }
-
   // 判定严重级别
   const criticalFindings = findings.filter(f => {
     const p = THREAT_PATTERNS.find(t => t.name === f)
@@ -157,7 +137,7 @@ export function scanSkillContent(content: string, filePath: string): SecuritySca
   const hasCriticalSeverity = criticalFindings.length > 0
   const hasWarningSeverity = findings.some(f => {
     const p = THREAT_PATTERNS.find(t => t.name === f)
-    return p?.severity === 'warning' || f.startsWith('injection:') || f === 'invisible_unicode' || f === 'file_too_large'
+    return p?.severity === 'warning' || f === 'invisible_unicode' || f === 'file_too_large'
   })
 
   return {

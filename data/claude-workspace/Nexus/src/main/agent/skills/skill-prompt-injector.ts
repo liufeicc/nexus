@@ -4,30 +4,14 @@
  * 职责：构建可用 skill 列表注入系统提示，含双层缓存（内存 LRU + 磁盘快照）。
  */
 
-import fs from 'node:fs'
-import path from 'node:path'
 import { SkillManager } from './skill-manager'
-import {
-  SKILLS_DIR,
-  SKILLS_SNAPSHOT_FILE,
-} from '../../../core/constants/skill'
-import { SkillMeta } from '../../../core/types/skill'
+import { SkillSnapshotCache, SnapshotData } from './skill-snapshot-cache'
 
-/** 磁盘快照数据 */
-interface SnapshotData {
-  version: number
-  skills: Array<{
-    skill_name: string
-    category: string | null
-    frontmatter_name: string
-    description: string
-    platforms: string[]
-  }>
-  manifest: {
-    mtime: number
-    size: number
-    files: Record<string, { mtime: number; size: number }>
-  }
+/** 统一的 skill 索引条目 */
+interface SkillIndexEntry {
+  name: string
+  description: string
+  category: string | null
 }
 
 /**
@@ -35,23 +19,20 @@ interface SnapshotData {
  */
 export class SkillPromptInjector {
   private skillManager: SkillManager
+  private snapshotCache: SkillSnapshotCache
   private lruCache: Map<string, string> = new Map()
   private readonly MAX_LRU_ENTRIES = 8
-  private snapshotPath: string
 
   constructor(skillManager: SkillManager, snapshotPath?: string) {
     this.skillManager = skillManager
-    this.snapshotPath = snapshotPath || path.join(SKILLS_DIR, SKILLS_SNAPSHOT_FILE)
+    this.snapshotCache = new SkillSnapshotCache(skillManager.skillsDir, snapshotPath)
   }
 
   /**
    * 构建 skill 索引 block
    */
-  buildBlock(
-    disabledNames: Set<string> = new Set(),
-    _availableTools?: Set<string>,
-  ): string {
-    const cacheKey = this.makeCacheKey(disabledNames, _availableTools)
+  buildBlock(disabledNames: Set<string> = new Set()): string {
+    const cacheKey = this.makeCacheKey(disabledNames)
     const cached = this.lruCache.get(cacheKey)
     if (cached) {
       this.lruCache.delete(cacheKey)
@@ -60,8 +41,8 @@ export class SkillPromptInjector {
     }
 
     // 检查磁盘快照
-    const snapshot = this.loadSnapshot()
-    if (snapshot && this.validateSnapshot(snapshot)) {
+    const snapshot = this.snapshotCache.load()
+    if (snapshot && this.snapshotCache.validate(snapshot)) {
       const result = this.buildFromSnapshot(snapshot, disabledNames)
       this.lruCache.set(cacheKey, result)
       return result
@@ -69,7 +50,7 @@ export class SkillPromptInjector {
 
     // 冷启动：完整扫描
     const result = this.scanAndBuild(disabledNames)
-    this.saveSnapshot(result.snapshotData)
+    this.snapshotCache.save(result.snapshotData)
     this.lruCache.set(cacheKey, result.block)
 
     // LRU 淘汰
@@ -86,15 +67,11 @@ export class SkillPromptInjector {
   /**
    * 生成缓存键
    */
-  private makeCacheKey(
-    disabledNames: Set<string>,
-    availableTools?: Set<string>,
-  ): string {
+  private makeCacheKey(disabledNames: Set<string>): string {
     const parts = [
-      this.skillManager['skillsDir'],
+      this.skillManager.skillsDir,
       process.platform,
       [...disabledNames].sort().join(','),
-      availableTools ? [...availableTools].sort().join(',') : '*',
     ]
     return parts.join('|')
   }
@@ -106,7 +83,13 @@ export class SkillPromptInjector {
     snapshot: SnapshotData,
     disabledNames: Set<string>,
   ): string {
-    const skills = snapshot.skills.filter(s => !disabledNames.has(s.skill_name))
+    const skills: SkillIndexEntry[] = snapshot.skills
+      .filter(s => !disabledNames.has(s.skill_name))
+      .map(s => ({
+        name: s.skill_name,
+        description: s.description,
+        category: s.category,
+      }))
     return this.formatSkillsIndex(skills)
   }
 
@@ -122,6 +105,7 @@ export class SkillPromptInjector {
     const block = this.formatSkillsIndex(filtered)
 
     // 构建快照数据
+    const skillMdPaths = this.skillManager.discoverSkillFiles().map(f => f.skillMdPath)
     const snapshotData: SnapshotData = {
       version: 1,
       skills: filtered.map(s => ({
@@ -131,7 +115,7 @@ export class SkillPromptInjector {
         description: s.description,
         platforms: [],
       })),
-      manifest: this.buildManifest(),
+      manifest: this.snapshotCache.buildManifest(skillMdPaths),
     }
 
     return { block, snapshotData }
@@ -140,11 +124,11 @@ export class SkillPromptInjector {
   /**
    * 格式化 skill 索引
    */
-  private formatSkillsIndex(skills: Array<{ name?: string; description?: string; category?: string | null; skill_name?: string }>): string {
+  private formatSkillsIndex(skills: SkillIndexEntry[]): string {
     if (skills.length === 0) return ''
 
     // 按分类分组
-    const grouped = new Map<string | null, typeof skills>()
+    const grouped = new Map<string | null, SkillIndexEntry[]>()
     for (const skill of skills) {
       const cat = skill.category ?? null
       if (!grouped.has(cat)) grouped.set(cat, [])
@@ -162,9 +146,7 @@ export class SkillPromptInjector {
       const catLabel = category || 'general'
       result += `  ${catLabel}:\n`
       for (const skill of catSkills) {
-        const name = skill.name ?? skill.skill_name ?? ''
-        const desc = skill.description ?? ''
-        result += `    - ${name}: ${desc}\n`
+        result += `    - ${skill.name}: ${skill.description}\n`
       }
     }
 
@@ -172,80 +154,6 @@ export class SkillPromptInjector {
     result += 'Only proceed without loading a skill if genuinely none are relevant to the task.'
 
     return result
-  }
-
-  /**
-   * 构建文件 manifest（用于快照验证）
-   */
-  private buildManifest(): SnapshotData['manifest'] {
-    const files: Record<string, { mtime: number; size: number }> = {}
-    const skillsDir = this.skillManager['skillsDir']
-
-    if (fs.existsSync(skillsDir)) {
-      const entries = fs.readdirSync(skillsDir, { withFileTypes: true })
-      for (const entry of entries) {
-        if (!entry.isDirectory() || entry.name.startsWith('.')) continue
-        const catDir = path.join(skillsDir, entry.name)
-        const catEntries = fs.readdirSync(catDir, { withFileTypes: true })
-        for (const catEntry of catEntries) {
-          if (!catEntry.isDirectory() || catEntry.name.startsWith('.')) continue
-          const skillMdPath = path.join(catDir, catEntry.name, 'SKILL.md')
-          if (fs.existsSync(skillMdPath)) {
-            const stat = fs.statSync(skillMdPath)
-            files[skillMdPath] = { mtime: stat.mtimeMs, size: stat.size }
-          }
-        }
-      }
-    }
-
-    const snapshotStat = fs.existsSync(this.snapshotPath)
-      ? fs.statSync(this.snapshotPath)
-      : null
-
-    return {
-      mtime: snapshotStat?.mtimeMs ?? Date.now(),
-      size: snapshotStat?.size ?? 0,
-      files,
-    }
-  }
-
-  /**
-   * 验证快照是否有效（检查 mtime 和文件大小）
-   */
-  private validateSnapshot(snapshot: SnapshotData): boolean {
-    for (const [filePath, info] of Object.entries(snapshot.manifest.files)) {
-      if (!fs.existsSync(filePath)) return false
-      const stat = fs.statSync(filePath)
-      if (stat.mtimeMs !== info.mtime || stat.size !== info.size) return false
-    }
-    return true
-  }
-
-  /**
-   * 加载磁盘快照
-   */
-  private loadSnapshot(): SnapshotData | null {
-    try {
-      if (!fs.existsSync(this.snapshotPath)) return null
-      const content = fs.readFileSync(this.snapshotPath, 'utf-8')
-      return JSON.parse(content) as SnapshotData
-    } catch {
-      return null
-    }
-  }
-
-  /**
-   * 保存磁盘快照
-   */
-  private saveSnapshot(data: SnapshotData): void {
-    try {
-      const dir = path.dirname(this.snapshotPath)
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-      fs.writeFileSync(this.snapshotPath, JSON.stringify(data, null, 2), 'utf-8')
-    } catch (error) {
-      // 快照保存失败不影响主流程
-      console.warn(`[SkillPromptInjector] 保存快照失败: ${error}`)
-    }
   }
 
   /**

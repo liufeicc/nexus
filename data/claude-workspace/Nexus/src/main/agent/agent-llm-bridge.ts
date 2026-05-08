@@ -66,6 +66,21 @@ export function createLlmBridge(
     ]
     const toolDefs = await toolRegistry.getDefinitions()
 
+    // 打印发送给大模型的完整消息
+    logger.info('===== 发送给大模型的完整消息 (非流式) =====')
+    logger.info(`[LLM Bridge] 消息总数: ${apiMessages.length}, 工具数: ${toolDefs.length}`)
+    for (let i = 0; i < apiMessages.length; i++) {
+      const msg = apiMessages[i]
+      const contentPreview = typeof msg.content === 'string'
+        ? msg.content.substring(0, 500) + (msg.content!.length > 500 ? '...' : '')
+        : JSON.stringify(msg.content).substring(0, 500)
+      logger.info(`[LLM Bridge] [${i}] role=${msg.role}, content_length=${msg.content?.length || 0}, preview=${contentPreview}`)
+    }
+    if (toolDefs.length > 0) {
+      logger.info(`[LLM Bridge] 工具列表: ${toolDefs.map(t => t.name).join(', ')}`)
+    }
+    logger.info('==========================================')
+
     return llmClient.chat(apiMessages, {
       tools: toolDefs.length > 0 ? toolDefs : undefined,
     })
@@ -85,7 +100,6 @@ export function createLlmBridge(
     const callbacks: StreamCallbacks = {
       onChunk: (text: string) => {
         fullContent += text
-        logger.debug(`[AIAgent] 收到文本增量 (${text.length} chars)，总长度: ${fullContent.length}`)
         eventManager.emit(createEvent('message_delta', { text }))
       },
       onThinking: (text: string) => {
@@ -103,6 +117,21 @@ export function createLlmBridge(
       { role: 'system' as const, content: systemPrompt, timestamp: Date.now() },
       ...messages,
     ]
+
+    // 打印发送给大模型的完整消息
+    logger.info('===== 发送给大模型的完整消息 (流式) =====')
+    logger.info(`[LLM Bridge] 消息总数: ${apiMessages.length}, 工具数: ${toolDefs.length}`)
+    for (let i = 0; i < apiMessages.length; i++) {
+      const msg = apiMessages[i]
+      const contentPreview = typeof msg.content === 'string'
+        ? msg.content.substring(0, 500) + (msg.content!.length > 500 ? '...' : '')
+        : JSON.stringify(msg.content).substring(0, 500)
+      logger.info(`[LLM Bridge] [${i}] role=${msg.role}, content_length=${msg.content?.length || 0}, preview=${contentPreview}`)
+    }
+    if (toolDefs.length > 0) {
+      logger.info(`[LLM Bridge] 工具列表: ${toolDefs.map(t => t.name).join(', ')}`)
+    }
+    logger.info('==========================================')
 
     return llmClient.streamChat(apiMessages, callbacks, {
       tools: toolDefs.length > 0 ? toolDefs : undefined,
