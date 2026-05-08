@@ -413,6 +413,9 @@ export interface ElectronAPI {
     clear: () => Promise<void>
   }
 
+  // 配置变更事件
+  onConfigChanged: (callback: (data: { key: string }) => void) => () => void
+
   // 退出前保存快照
   onSaveOnExit: (callback: () => void) => () => void
 }

@@ -2,7 +2,7 @@
  * 配置管理 IPC 处理器
  */
 
-import { ipcMain } from 'electron'
+import { ipcMain, BrowserWindow } from 'electron'
 import { IPC_CHANNELS } from '../../../core/constants/ipc-channels'
 import { DatabaseService } from '../../services/database.service'
 import { LLMClient } from '../../agent/llm-client'
@@ -81,6 +81,12 @@ export function registerConfigHandlers(): void {
     // 配置修改后使缓存失效，下次 loadAgentConfig 从数据库重新读取
     invalidateConfigCache()
     logger.info(`[ConfigHandler] 配置 ${key} 已保存，缓存已失效`)
+
+    // 通知渲染进程配置已变更
+    const mainWindow = BrowserWindow.getAllWindows()[0]
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(IPC_CHANNELS.CONFIG_CHANGED, { key })
+    }
   })
 
   ipcMain.handle(IPC_CHANNELS.CONFIG_GET, (_, key: string) => {

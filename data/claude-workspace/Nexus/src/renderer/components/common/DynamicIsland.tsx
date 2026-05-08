@@ -123,6 +123,19 @@ export function DynamicIsland({ standalone = false }: { standalone?: boolean }) 
     }
   }, [islandState])
 
+  // 监听配置变更事件（设置中点击「应用」后实时刷新 enableVision）
+  useEffect(() => {
+    return window.electronAPI?.onConfigChanged?.((data) => {
+      if (data.key === 'agentConfig') {
+        window.electronAPI?.config.get('agentConfig').then((config: any) => {
+          if (config?.enableVision !== undefined) {
+            setEnableVision(config.enableVision)
+          }
+        })
+      }
+    })
+  }, [])
+
   // 滚动引用 + 输入框引用（自动聚焦 + 自适应高度）
   const contentRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
