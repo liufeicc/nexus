@@ -461,24 +461,6 @@ export function SettingsModal() {
                       </div>
                     )}
 
-                    {/* 视觉开关 */}
-                    <div className="setting-item">
-                      <div className="setting-label">
-                        <div className="setting-label-text">视觉</div>
-                        <div className="setting-desc">允许附加图片并发送给模型进行识别</div>
-                      </div>
-                      <div className="setting-control">
-                        <label className="toggle-switch">
-                          <input
-                            type="checkbox"
-                            checked={mainModelConfig.enableVision !== false}
-                            onChange={(e) => updateMainField('enableVision', e.target.checked)}
-                          />
-                          <span className="toggle-slider"></span>
-                        </label>
-                      </div>
-                    </div>
-
                     {/* 高级参数（可折叠） */}
                     <div className="setting-collapsible">
                       <div className="setting-collapsible-header">
@@ -505,6 +487,24 @@ export function SettingsModal() {
                       </div>
                       {mainAdvancedOpen && (
                         <div className="setting-collapsible-body">
+                          {/* 视觉开关 */}
+                          <div className="setting-item">
+                            <div className="setting-label">
+                              <div className="setting-label-text">视觉</div>
+                              <div className="setting-desc">允许附加图片并发送给模型进行识别</div>
+                            </div>
+                            <div className="setting-control">
+                              <label className="toggle-switch">
+                                <input
+                                  type="checkbox"
+                                  checked={mainModelConfig.enableVision !== false}
+                                  onChange={(e) => updateMainField('enableVision', e.target.checked)}
+                                />
+                                <span className="toggle-slider"></span>
+                              </label>
+                            </div>
+                          </div>
+
                           <div className="setting-item">
                             <div className="setting-label">
                               <div className="setting-label-text">最大迭代次数</div>

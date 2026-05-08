@@ -132,16 +132,14 @@ export function registerConfigHandlers(): void {
       let supportsStream = false
       let streamContent = ''
       try {
-        await new Promise<void>((resolve, reject) => {
-          llm.streamChat(
-            [{ role: 'user', content: 'Hi', timestamp: Date.now() }],
-            {
-              onChunk: (text) => { streamContent += text },
-              onDone: () => resolve(),
-              onError: (err) => reject(err),
-            },
-          )
-        })
+        await llm.streamChat(
+          [{ role: 'user', content: 'Hi', timestamp: Date.now() }],
+          {
+            onChunk: (text) => { streamContent += text },
+            onDone: () => {},
+            onError: () => {},
+          },
+        )
         supportsStream = streamContent.length > 0
       } catch (e) {
         logger.warn('[ConfigHandler] stream 测试失败:', e)
