@@ -146,25 +146,35 @@ export function registerConfigHandlers(): void {
       }
 
       // 测试视觉能力（发送包含测试图片的多模态消息）
+      // 使用 streamChat 而非 chat，因为某些 provider（如 Anthropic）对大 max_tokens
+      // 请求要求必须使用 streaming，否则会报 "Streaming is required" 错误
       let supportsVision = false
       try {
-        const visionResult = await llm.chat([
-          {
-            role: 'user',
-            content: [
-              { type: 'text' as const, text: '请描述这张图片' },
-              {
-                type: 'image' as const,
-                image: {
-                  data: TEST_IMAGE_BASE64,
-                  mimeType: 'image/png',
+        let visionContent = ''
+        await llm.streamChat(
+          [
+            {
+              role: 'user',
+              content: [
+                { type: 'text' as const, text: '请描述这张图片' },
+                {
+                  type: 'image' as const,
+                  image: {
+                    data: TEST_IMAGE_BASE64,
+                    mimeType: 'image/png',
+                  },
                 },
-              },
-            ],
-            timestamp: Date.now(),
+              ],
+              timestamp: Date.now(),
+            },
+          ],
+          {
+            onChunk: (text) => { visionContent += text },
+            onDone: () => {},
+            onError: () => {},
           },
-        ])
-        supportsVision = !!visionResult.content || !!visionResult.toolCalls
+        )
+        supportsVision = visionContent.length > 0
       } catch (e) {
         logger.debug('[ConfigHandler] 视觉能力测试失败:', e)
       }
