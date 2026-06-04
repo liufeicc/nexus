@@ -1,0 +1,124 @@
+/**
+ * 主题切换器样式
+ */
+
+.theme-switcher {
+  position: relative;
+}
+
+.theme-toggle-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-toggle-btn.icon-yellow svg {
+  color: #eab308;
+}
+.theme-toggle-btn.icon-blue svg {
+  color: #2563eb;
+}
+.theme-toggle-btn.icon-green svg {
+  color: #16a34a;
+}
+.theme-toggle-btn.icon-cyan svg {
+  color: #06b6d4;
+}
+.theme-toggle-btn.icon-orange svg {
+  color: #f97316;
+}
+.theme-toggle-btn.icon-pink svg {
+  color: #ec4899;
+}
+
+.theme-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.theme-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 180px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 1000;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.theme-option:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.theme-option.active {
+  background-color: #dcfce7;
+}
+
+.theme-option-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-option-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.theme-option-icon.icon-yellow svg {
+  color: #eab308;
+}
+.theme-option-icon.icon-blue svg {
+  color: #2563eb;
+}
+.theme-option-icon.icon-green svg {
+  color: #16a34a;
+}
+.theme-option-icon.icon-cyan svg {
+  color: #06b6d4;
+}
+.theme-option-icon.icon-orange svg {
+  color: #f97316;
+}
+.theme-option-icon.icon-pink svg {
+  color: #ec4899;
+}
+
+.theme-option-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.theme-check {
+  flex-shrink: 0;
+  color: #22c55e;
+}

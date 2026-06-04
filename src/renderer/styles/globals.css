@@ -1,0 +1,619 @@
+/**
+ * 全局样式
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* ============== 主题颜色变量 - 默认暖阳主题 ============== */
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e0e0e0;
+  --bg-sidebar: #e0e0e0;
+  --bg-toolbar: #ffffff;
+
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+
+  --accent-color: #007acc;
+  --accent-hover: #005f9e;
+  --border-color: #cccccc;
+  --hover-bg: rgba(0, 0, 0, 0.06);
+
+  /* 布局变量 */
+  --sidebar-width: 224px;
+  --toolbar-height: 36px;
+  --statusbar-height: 24px;
+  --titlebar-height: 40px;
+  --header-height: 40px;
+
+  /* 过渡效果 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+}
+
+/* ==================== 基础样式 ==================== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ==================== 应用布局 ==================== */
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==================== 顶部标题栏 ==================== */
+.app-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  -webkit-app-region: drag;
+  transition: background-color var(--transition-normal);
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: none;
+}
+
+.app-logo-icon svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+}
+
+.app-logo-icon img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.app-logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  -webkit-app-region: no-drag;
+}
+
+/* 设置按钮 */
+.settings-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  -webkit-app-region: no-drag;
+}
+
+.settings-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.settings-btn svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-primary);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+/* 帮助按钮 */
+.help-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.help-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.help-btn svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+}
+
+/* 关于对话框 */
+.about-modal .modal-container {
+  max-width: 400px;
+}
+
+.about-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.about-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.about-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.about-info-item:first-child {
+  justify-content: center;
+  padding: 12px 16px;
+}
+
+.about-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.about-value {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* 窗口控制按钮组 */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.window-control-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.window-control-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.window-control-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.window-control-btn.close-btn:hover {
+  background-color: #e81123;
+}
+
+.window-control-btn.close-btn:hover svg {
+  color: white;
+}
+
+/* ==================== 主容器 ==================== */
+.app-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  transition: background-color var(--transition-normal);
+}
+
+/* ==================== 侧边栏 ==================== */
+.sidebar {
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-sidebar);
+  transition: all var(--transition-normal);
+}
+
+.sidebar-header {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 侧边栏添加按钮 - 带边框的方形按钮 */
+.sidebar-add-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.sidebar-add-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-muted);
+}
+
+.sidebar-add-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.sidebar-section {
+  padding: 8px 12px;
+}
+
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 侧边栏底部新建会话按钮 */
+.sidebar-footer button.btn-new-session {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none !important;
+  border-radius: 6px;
+  background-color: var(--accent-color) !important;
+  color: white !important;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.sidebar-footer button.btn-new-session:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+.sidebar-footer button.btn-new-session svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ==================== 分割线 ==================== */
+.resizer {
+  width: 4px;
+  background-color: transparent;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.resizer:hover {
+  background-color: var(--border-color);
+}
+
+/* 布局分割线（可拖动调整大小） */
+.layout-resizer {
+  background: rgba(204, 204, 204, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.layout-resizer:hover {
+  background: rgba(204, 204, 204, 0.3);
+}
+
+.layout-resizer:hover .layout-resizer-handle {
+  background: rgba(204, 204, 204, 0.8);
+}
+
+.layout-resizer-handle {
+  background: rgba(204, 204, 204, 0.3);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-toggle-btn {
+  width: 16px;
+  height: 48px;
+  border: none;
+  background-color: rgba(128, 128, 128, 0.3);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  z-index: 10;
+  position: relative;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.sidebar-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 分区展开/收缩按钮（圆角正方形） */
+.section-toggle-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: rgba(128, 128, 128, 0.2);
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.section-toggle-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.section-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================== 主内容区域 ==================== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==================== 工具栏 ==================== */
+.toolbar {
+  height: var(--toolbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  background-color: var(--bg-toolbar);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-normal);
+}
+
+.toolbar-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+  margin-right: 8px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 8px;
+}
+
+/* ==================== 终端区域 ==================== */
+.terminal-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panels-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* 终端面板包装器 - 用于 flex 布局 */
+.terminal-panel-wrapper {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== 状态栏 ==================== */
+.status-bar {
+  height: var(--statusbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background-color: var(--bg-toolbar);
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: all var(--transition-normal);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ==================== SVG 图标 ==================== */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+/* ==================== 滚动条样式 ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==================== 工具类 ==================== */
+.hidden {
+  display: none !important;
+}
+
+/* ==================== 暗色主题图标适配 ==================== */
+/* 深蓝和森林主题背景很暗，侧边栏箭头和加号图标需要白色才能看清 */
+
+/* 收起/展开侧边栏箭头 */
+[data-theme="deepblue"] .sidebar-toggle-btn,
+[data-theme="green"] .sidebar-toggle-btn {
+  color: #ffffff;
+}
+
+[data-theme="deepblue"] .sidebar-toggle-btn svg,
+[data-theme="deepblue"] .sidebar-toggle-btn svg path,
+[data-theme="green"] .sidebar-toggle-btn svg,
+[data-theme="green"] .sidebar-toggle-btn svg path {
+  color: #ffffff;
+  fill: #ffffff;
+}
+
+/* 新增会话加号 */
+[data-theme="deepblue"] .sidebar-add-btn,
+[data-theme="green"] .sidebar-add-btn {
+  color: #ffffff;
+}
+
+[data-theme="deepblue"] .sidebar-add-btn svg,
+[data-theme="deepblue"] .sidebar-add-btn svg path,
+[data-theme="green"] .sidebar-add-btn svg,
+[data-theme="green"] .sidebar-add-btn svg path {
+  color: #ffffff;
+  fill: #ffffff;
+}
+
+/* 最近使用区域展开/收起箭头 */
+[data-theme="deepblue"] .section-toggle-btn svg,
+[data-theme="deepblue"] .section-toggle-btn svg path,
+[data-theme="green"] .section-toggle-btn svg,
+[data-theme="green"] .section-toggle-btn svg path {
+  color: #ffffff;
+  fill: #ffffff;
+}

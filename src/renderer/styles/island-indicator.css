@@ -1,0 +1,61 @@
+/**
+ * 灵动岛收起指示器样式
+ */
+
+.island-indicator-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 36px;
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(170deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.97) 100%);
+  border-radius: 14px;
+}
+
+.island-container.visible .island-indicator-row {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+.island-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-cyan);
+  box-shadow: 0 0 6px var(--c-cyan);
+}
+
+.island-label {
+  color: #e0e7ff;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.island-pulse-ring {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: relative;
+  transform: translateX(-88px);
+}
+
+.island-pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--c-cyan);
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}

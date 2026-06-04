@@ -1,0 +1,87 @@
+/**
+ * 替换面板图标条和复制中指示器样式
+ */
+
+.replace-panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  margin-right: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  animation: replaceBarSlideIn 0.2s ease;
+}
+
+.replace-panel-bar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.replace-panel-bar-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.replace-panel-bar-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes replaceBarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.panel-pasting-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.panel-pasting-spinner {
+  display: flex;
+  gap: 2px;
+}
+
+.panel-pasting-spinner span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  animation: panelPastingBounce 1.2s ease-in-out infinite;
+}
+
+.panel-pasting-spinner span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.panel-pasting-spinner span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes panelPastingBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,555 @@
+/**
+ * 灵动岛独立窗口模式、确认对话框和输入历史样式
+ */
+
+/* ===== 独立窗口模式 ===== */
+.dynamic-island.island-standalone {
+  -webkit-app-region: no-drag;
+  background: transparent !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.dynamic-island.island-standalone .island-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.dynamic-island.island-standalone .island-container::before {
+  display: none !important;
+}
+
+.dynamic-island.island-standalone .island-drag-handle {
+  cursor: grab;
+}
+
+.dynamic-island.island-standalone button,
+.dynamic-island.island-standalone input,
+.dynamic-island.island-standalone textarea,
+.dynamic-island.island-standalone a,
+.dynamic-island.island-standalone select {
+  cursor: pointer;
+}
+
+/* ===== 清除历史对话确认 ===== */
+.island-clear-confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.island-clear-confirm-text {
+  color: #94a3b8;
+  font-size: 12px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.island-clear-confirm-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 6px;
+  color: #34d399;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.island-clear-confirm-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.island-clear-confirm-btn:hover {
+  background: rgba(52, 211, 153, 0.3);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #6ee7b7;
+}
+
+.island-clear-cancel-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 6px;
+  color: var(--c-red);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.island-clear-cancel-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.island-clear-cancel-btn:hover {
+  background: rgba(248, 113, 113, 0.3);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+/* ===== 输入历史按钮 ===== */
+.island-history-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  color: rgba(251, 191, 36, 0.85);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.island-history-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.island-history-btn:hover {
+  background: rgba(251, 191, 36, 0.3);
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fbbf24;
+}
+
+/* ===== 输入历史的面板 ===== */
+.island-history-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100001;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+  background: transparent;
+}
+
+.island-history-modal {
+  width: 520px;
+  max-height: 500px;
+  background: rgba(15, 23, 42, 0.97);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(251, 191, 36, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.island-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+  background: rgba(10, 15, 30, 0.95);
+}
+
+.island-history-header h3 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 2px;
+}
+
+.island-history-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #b0bec5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.island-history-close:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
+.island-history-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.island-history-clear-all {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #b0bec5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.island-history-clear-all:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
+.island-history-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 8px 0;
+}
+
+.island-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  transition: background 0.15s ease;
+  border-left: 2px solid transparent;
+}
+
+.island-history-item:hover {
+  background: rgba(251, 191, 36, 0.06);
+  border-left-color: rgba(251, 191, 36, 0.3);
+}
+
+.island-history-item-text {
+  flex: 1;
+  min-width: 0;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  padding-right: 8px;
+}
+
+.island-history-item-text:hover {
+  color: #fbbf24;
+}
+
+.island-history-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.island-history-item-time {
+  color: #64748b;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.island-history-item-delete {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #64748b;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.island-history-item-delete:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.island-history-empty {
+  padding: 24px;
+  text-align: center;
+  color: #78909c;
+  font-size: 13px;
+}
+
+/* ===== 任务计划 ===== */
+.island-plan {
+  padding: 8px 12px;
+  background: rgba(167, 139, 250, 0.06);
+  border-radius: 8px;
+  border-left: 3px solid rgba(167, 139, 250, 0.4);
+}
+
+.island-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+.island-plan-header:hover .island-plan-title {
+  color: #c4b5fd;
+}
+
+.island-plan-title {
+  font-size: 12px;
+  color: #a78bfa;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.island-plan-progress {
+  font-size: 11px;
+  color: #64748b;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.island-plan-toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #64748b;
+  transition: transform 0.15s ease;
+}
+
+.island-plan-toggle-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.island-plan-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.island-plan-marker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 22px;
+}
+
+.island-plan-item.in_progress .island-plan-marker { color: #fbbf24; }
+.island-plan-item.pending .island-plan-marker { color: #64748b; }
+.island-plan-item.completed .island-plan-marker { color: #34d399; }
+.island-plan-item.cancelled .island-plan-marker { color: #f87171; }
+
+.island-plan-item.completed .island-plan-content {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.island-plan-item.cancelled .island-plan-content {
+  text-decoration: line-through;
+  opacity: 0.4;
+}
+
+.island-plan-id {
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.island-plan-content {
+  color: #e2e8f0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== 计划文档渲染（write_plan 输出） ===== */
+
+.island-plan-document {
+  margin: 8px 0;
+  padding: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.island-plan-doc-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a5b4fc;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.island-plan-doc-content {
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.island-plan-doc-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  margin: 8px 0;
+}
+
+/* Markdown 元素样式 */
+.plan-md-h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 10px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.plan-md-h2 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #a5b4fc;
+  margin: 8px 0 4px;
+}
+
+.plan-md-h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c7d2fe;
+  margin: 6px 0 3px;
+}
+
+.plan-md-p {
+  margin: 3px 0;
+  color: #cbd5e1;
+}
+
+.plan-md-code {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* 步骤列表 */
+.plan-md-step {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.plan-md-step-marker {
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.plan-md-step-num {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #94a3b8;
+  min-width: 18px;
+}
+
+.plan-md-step-text {
+  flex: 1;
+  color: #e2e8f0;
+}
+
+/* 步骤状态变体 */
+.plan-md-step.completed .plan-md-step-marker { color: #34d399; }
+.plan-md-step.completed .plan-md-step-text { text-decoration: line-through; opacity: 0.5; }
+
+.plan-md-step.in_progress .plan-md-step-marker { color: #fbbf24; }
+.plan-md-step.in_progress .plan-md-step-text { color: #fef3c7; }
+
+.plan-md-step.failed .plan-md-step-marker { color: #f87171; }
+.plan-md-step.failed .plan-md-step-text { color: #fca5a5; }
+
+/* 引用备注 */
+.plan-md-note {
+  padding: 4px 8px;
+  margin: 4px 0;
+  border-left: 2px solid rgba(99, 102, 241, 0.4);
+  background: rgba(99, 102, 241, 0.06);
+  border-radius: 0 4px 4px 0;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+/* 列表 */
+.plan-md-li {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 0;
+  padding-left: 8px;
+}
+
+.plan-md-li-marker {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 11px;
+  min-width: 14px;
+  text-align: center;
+}
+
+/* 分隔线 */
+.plan-md-hr {
+  border: none;
+  height: 1px;
+  background: rgba(99, 102, 241, 0.15);
+  margin: 8px 0;
+}
