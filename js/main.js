@@ -326,6 +326,12 @@
   // DOWNLOAD BUTTONS
   // ============================================================
 
+  var DOWNLOAD_URLS = {
+    'Linux': 'https://github.com/liufeicc/nexus/releases/tag/v1.0.0',
+    'macOS': '',
+    'Windows': ''
+  };
+
   function bindDownloadButtons() {
     var btns = document.querySelectorAll('.btn-download');
     btns.forEach(function (btn) {
@@ -334,10 +340,15 @@
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         var h3 = this.closest('.download-card').querySelector('h3');
-        var os = h3 ? h3.textContent : 'Nexus';
-        alert(
-          'Nexus ' + os + ' build coming soon.\n\nBuild from source: git clone https://github.com/liufeicc/nexus'
-        );
+        var os = h3 ? h3.textContent.trim() : '';
+        var url = DOWNLOAD_URLS[os];
+        if (url) {
+          window.open(url, '_blank');
+        } else {
+          alert(
+            'Nexus ' + os + ' build coming soon.\n\nBuild from source: git clone https://github.com/liufeicc/nexus'
+          );
+        }
       });
     });
   }
