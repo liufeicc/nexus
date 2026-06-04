@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus — AI 智能工作平台</title>
+  <meta name="description" content="Nexus 是基于 Electron 的桌面级 AI 智能工作终端。三面板系统 + Nexus Hub AI 悬浮交互，一站式智能化工作环境。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body class="theme-light">
+
+  <!-- Nav -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="6" fill="url(#logo-grad)"/>
+          <path d="M7 9h14M7 14h10M7 19h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        <span>Nexus Workbench</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#panels" data-i18n="nav.panels">3 Panels</a>
+        <a href="#island" data-i18n="nav.island">Dynamic Island</a>
+        <a href="#showcase" data-i18n="nav.showcase">Showcase</a>
+        <a href="#download" data-i18n="nav.download">Download</a>
+        <a href="docs.html" data-i18n="nav.docs">Docs</a>
+        <a href="https://github.com/liufei/Nexus" target="_blank" class="nav-gh" aria-label="GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge" data-i18n="hero.badge"></div>
+      <h1 data-i18n="hero.title"></h1>
+      <p class="hero-desc" data-i18n="hero.desc"></p>
+      <div class="hero-actions">
+        <a href="#download" class="btn-primary" data-i18n="hero.download"></a>
+        <a href="https://github.com/liufei/Nexus" target="_blank" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span data-i18n="hero.github"></span>
+        </a>
+      </div>
+    </div>
+    <!-- terminal preview -->
+    <div class="hero-terminal">
+      <div class="term-header">
+        <div class="term-dots"><span></span><span></span><span></span></div>
+        <div class="term-tabs">
+          <span class="tab active">server</span>
+          <span class="tab">logs</span>
+          <span class="tab">build</span>
+        </div>
+      </div>
+      <div class="term-body">
+        <div class="term-line"><span class="prompt">~</span> <span class="cmd">nexus init</span></div>
+        <div class="term-line dim">Loading workspace configuration...</div>
+        <div class="term-line dim">✓ 3 sessions restored from snapshot</div>
+        <div class="term-line"><span class="prompt">~</span> <span class="cmd">nvim src/app.ts</span></div>
+        <div class="term-line"><span class="prompt">~</span> <span class="cmd">npm run dev</span></div>
+        <div class="term-line success">[vite] dev server running at http://localhost:5173</div>
+        <div class="term-line"><span class="prompt">~</span> <span class="cursor">▊</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="section-header">
+      <h2 data-i18n="features.heading"></h2>
+      <p data-i18n="features.sub"></p>
+    </div>
+    <div class="features-grid" id="featuresGrid"></div>
+  </section>
+
+  <!-- Three Panels -->
+  <section id="panels">
+    <div class="section-header">
+      <h2 data-i18n="panels.heading"></h2>
+      <p data-i18n="panels.sub"></p>
+    </div>
+    <div class="panels-showcase">
+      <img src="images/4.png" alt="三面板系统展示" />
+    </div>
+    <div class="panels-grid">
+      <div class="panel-card">
+        <div class="panel-icon terminal-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        </div>
+        <h3 data-i18n="panels.terminal.name"></h3>
+        <p data-i18n="panels.terminal.desc"></p>
+        <div class="panel-preview">
+          <img src="images/1.png" alt="Terminal Panel Preview" />
+        </div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-icon files-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        </div>
+        <h3 data-i18n="panels.files.name"></h3>
+        <p data-i18n="panels.files.desc"></p>
+        <div class="panel-preview">
+          <img src="images/2.png" alt="File Browser Preview" />
+        </div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-icon browser-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3 data-i18n="panels.browser.name"></h3>
+        <p data-i18n="panels.browser.desc"></p>
+        <div class="panel-preview">
+          <img src="images/3.png" alt="Browser Preview" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dynamic Island -->
+  <section id="island">
+    <div class="section-header">
+      <h2 data-i18n="island.heading"></h2>
+      <p data-i18n="island.sub"></p>
+    </div>
+    <div class="island-showcase">
+      <div class="island-mockup">
+        <img src="images/5.png" alt="Nexus HUB交互界面" />
+      </div>
+      <div class="island-feature-list" id="islandFeatureList"></div>
+    </div>
+  </section>
+
+  <!-- Showcase -->
+  <section id="showcase">
+    <div class="section-header">
+      <h2 data-i18n="showcase.heading"></h2>
+      <p data-i18n="showcase.sub"></p>
+    </div>
+    <div class="showcase-frame">
+      <div class="showcase-mockup">
+        <div class="mockup-sidebar">
+          <div class="mockup-logo">
+            <div class="mockup-logo-icon"></div>
+            <span>Nexus</span>
+          </div>
+          <div class="mockup-session-list">
+            <div class="mockup-session active"><span>●</span> <span data-i18n="showcase.sessionMain"></span></div>
+            <div class="mockup-session"><span>●</span> <span data-i18n="showcase.sessionApi"></span></div>
+            <div class="mockup-session"><span>●</span> <span data-i18n="showcase.sessionDb"></span></div>
+            <div class="mockup-session"><span>○</span> <span data-i18n="showcase.sessionMonitor"></span></div>
+          </div>
+        </div>
+        <div class="mockup-main">
+          <div class="mockup-tabs">
+            <span class="mockup-tab active" data-i18n="showcase.tab1"></span>
+            <span class="mockup-tab" data-i18n="showcase.tab2"></span>
+            <span class="mockup-tab">+</span>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-pane top">
+              <div class="mockup-pane-header" data-i18n="showcase.paneEditor"></div>
+              <div class="mockup-code">
+                <span class="mc-line"><span class="mc-num">1</span> <span class="mc-kw">import</span> React <span class="mc-kw">from</span> <span class="mc-str">'react'</span></span>
+                <span class="mc-line"><span class="mc-num">2</span> <span class="mc-kw">import</span> { createRoot } <span class="mc-kw">from</span> <span class="mc-str">'react-dom/client'</span></span>
+                <span class="mc-line"><span class="mc-num">3</span> </span>
+                <span class="mc-line"><span class="mc-num">4</span> <span class="mc-kw">const</span> <span class="mc-fn">App</span> = () => {</span>
+                <span class="mc-line"><span class="mc-num">5</span>   <span class="mc-kw">return</span> &lt;<span class="mc-comp">MainLayout</span> /&gt;</span>
+                <span class="mc-line"><span class="mc-num">6</span> }</span>
+              </div>
+            </div>
+            <div class="mockup-divider"></div>
+            <div class="mockup-pane bottom">
+              <div class="mockup-pane-header" data-i18n="showcase.paneTerminal"></div>
+              <div class="mockup-terminal">
+                <span class="mterm-line"><span class="mterm-prompt">❯</span> <span data-i18n="showcase.termLine"></span></span>
+                <span class="mterm-line dim" data-i18n="showcase.termBuilt"></span>
+                <span class="mterm-line"><span class="mterm-prompt">❯</span> <span class="mterm-cursor">_</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section id="download">
+    <div class="section-header">
+      <h2 data-i18n="download.heading"></h2>
+      <p data-i18n="download.sub"></p>
+    </div>
+    <div class="download-grid" id="downloadGrid"></div>
+    <div class="download-alt">
+      <p data-i18n="download.alt"></p>
+      <div class="code-block">
+        <code>git clone https://github.com/liufei/Nexus && cd Nexus && npm install && npm run dev</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="6" fill="url(#logo-grad2)"/>
+          <path d="M7 9h14M7 14h10M7 19h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <defs><linearGradient id="logo-grad2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        <span>Nexus Workbench</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/liufei/Nexus" target="_blank">GitHub</a>
+        <a href="docs.html" data-i18n="footer.docs"></a>
+        <a href="license.html" data-i18n="footer.license"></a>
+      </div>
+      <div class="footer-copy">
+        <p data-i18n="footer.copy"></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- i18n data -->
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

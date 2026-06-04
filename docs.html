@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus — 操作手册</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body class="theme-light">
+
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="6" fill="url(#logo-grad)"/>
+          <path d="M7 9h14M7 14h10M7 19h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        <span>Nexus Workbench</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html#features" data-i18n="nav.features">特性</a>
+        <a href="index.html#panels" data-i18n="nav.panels">三面板</a>
+        <a href="index.html#island" data-i18n="nav.island">Nexus Hub</a>
+        <a href="index.html#showcase" data-i18n="nav.showcase">界面</a>
+        <a href="index.html#download" data-i18n="nav.download">下载</a>
+        <a href="docs.html" data-i18n="nav.docs">文档</a>
+        <a href="https://github.com/liufei/Nexus" target="_blank" class="nav-gh" aria-label="GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="docs-page">
+    <div class="docs-layout">
+      <aside class="docs-sidebar">
+        <div class="docs-sidebar-title" data-i18n="docs.toc">目录</div>
+        <ul class="docs-toc" id="docsToc"></ul>
+      </aside>
+
+      <main class="docs-content" id="docsContent">
+        <a href="index.html" class="docs-back-btn">← <span data-i18n="nav.docs">文档</span></a>
+        <h1 data-i18n="docs.title">Nexus 操作手册</h1>
+        <p class="docs-subtitle" data-i18n="docs.subtitle">用户指南</p>
+
+        <h2 id="ch1" data-i18n="docs.ch1"></h2>
+        <h3 id="ch1_1" data-i18n="docs.ch1_1"></h3>
+        <p data-i18n="docs.ch1_1_text"></p>
+        <h3 id="ch1_2" data-i18n="docs.ch1_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch1_2_text"></div>
+        <h3 id="ch1_3" data-i18n="docs.ch1_3"></h3>
+        <p data-i18n="docs.ch1_3_text"></p>
+        <h3 id="ch1_4" data-i18n="docs.ch1_4"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch1_4_text"></div>
+        <img src="images/docs/sec1-interface-overview.png" alt="Interface Overview" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch2" data-i18n="docs.ch2"></h2>
+        <h3 id="ch2_1" data-i18n="docs.ch2_1"></h3>
+        <p data-i18n="docs.ch2_1_text"></p>
+        <img src="images/docs/sec2-welcome-screen.png" alt="Welcome Screen" class="doc-image">
+        <h3 id="ch2_2" data-i18n="docs.ch2_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch2_2_text"></div>
+        <img src="images/docs/sec2-model-config.png" alt="Model Configuration" class="doc-image">
+        <h3 id="ch2_3" data-i18n="docs.ch2_3"></h3>
+        <p data-i18n="docs.ch2_3_text"></p>
+        <h3 id="ch2_4" data-i18n="docs.ch2_4"></h3>
+        <p data-i18n="docs.ch2_4_text"></p>
+        <hr class="doc-divider">
+
+        <h2 id="ch3" data-i18n="docs.ch3"></h2>
+        <h3 id="ch3_1" data-i18n="docs.ch3_1"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch3_1_text"></div>
+        <img src="images/docs/sec3-header.png" alt="Header" class="doc-image">
+        <h3 id="ch3_2" data-i18n="docs.ch3_2"></h3>
+        <p data-i18n="docs.ch3_2_text"></p>
+        <img src="images/docs/sec3-sidebar.png" alt="Sidebar" class="doc-image">
+        <h3 id="ch3_3" data-i18n="docs.ch3_3"></h3>
+        <p data-i18n="docs.ch3_3_text"></p>
+        <img src="images/docs/sec3-workspace.png" alt="Workspace" class="doc-image">
+        <h3 id="ch3_4" data-i18n="docs.ch3_4"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch3_4_text"></div>
+        <img src="images/docs/sec3-toolbar.png" alt="Toolbar" class="doc-image">
+        <h3 id="ch3_5" data-i18n="docs.ch3_5"></h3>
+        <p data-i18n="docs.ch3_5_text"></p>
+        <img src="images/docs/sec3-status-bar.png" alt="Status Bar" class="doc-image">
+        <h3 id="ch3_6" data-i18n="docs.ch3_6"></h3>
+        <p data-i18n="docs.ch3_6_text"></p>
+        <img src="images/docs/sec3-layout.png" alt="Layout System" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch4" data-i18n="docs.ch4"></h2>
+        <h3 id="ch4_1" data-i18n="docs.ch4_1"></h3>
+        <p data-i18n="docs.ch4_1_text"></p>
+        <h3 id="ch4_2" data-i18n="docs.ch4_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch4_2_text"></div>
+        <img src="images/docs/sec4-sessions.png" alt="Session Management" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch5" data-i18n="docs.ch5"></h2>
+        <h3 id="ch5_1" data-i18n="docs.ch5_1"></h3>
+        <p data-i18n="docs.ch5_1_text"></p>
+        <img src="images/docs/sec5-terminal-welcome.png" alt="Terminal Welcome" class="doc-image">
+        <h3 id="ch5_2" data-i18n="docs.ch5_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch5_2_text"></div>
+        <img src="images/docs/sec5-terminal.png" alt="Terminal Panel" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch6" data-i18n="docs.ch6"></h2>
+        <h3 id="ch6_1" data-i18n="docs.ch6_1"></h3>
+        <p data-i18n="docs.ch6_1_text"></p>
+        <img src="images/docs/sec6-file-panel-intro.png" alt="File Panel Introduction" class="doc-image">
+        <h3 id="ch6_2" data-i18n="docs.ch6_2"></h3>
+        <p data-i18n="docs.ch6_2_text"></p>
+        <img src="images/docs/sec6-breadcrumb.png" alt="Breadcrumb Navigation" class="doc-image">
+        <img src="images/docs/sec6-file-search.png" alt="File Search" class="doc-image">
+        <h3 id="ch6_3" data-i18n="docs.ch6_3"></h3>
+        <p data-i18n="docs.ch6_3_text"></p>
+        <img src="images/docs/sec6-file-view-modes.png" alt="File View Modes" class="doc-image">
+        <img src="images/docs/sec6-file-viewer.png" alt="File Viewer" class="doc-image">
+        <img src="images/docs/sec6-file-status-bar.png" alt="File Status Bar" class="doc-image">
+        <h3 id="ch6_4" data-i18n="docs.ch6_4"></h3>
+        <p data-i18n="docs.ch6_4_text"></p>
+        <img src="images/docs/sec6-file-operations.png" alt="File Operations" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch7" data-i18n="docs.ch7"></h2>
+        <h3 id="ch7_1" data-i18n="docs.ch7_1"></h3>
+        <p data-i18n="docs.ch7_1_text"></p>
+        <img src="images/docs/sec7-browser-panel.png" alt="Browser Panel" class="doc-image">
+        <h3 id="ch7_2" data-i18n="docs.ch7_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch7_2_text"></div>
+        <img src="images/docs/sec7-tab-bar.png" alt="Tab Bar" class="doc-image">
+        <img src="images/docs/sec7-bookmarks.png" alt="Bookmarks" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch8" data-i18n="docs.ch8"></h2>
+        <h3 id="ch8_1" data-i18n="docs.ch8_1"></h3>
+        <p data-i18n="docs.ch8_1_text"></p>
+        <h3 id="ch8_2" data-i18n="docs.ch8_2"></h3>
+        <p data-i18n="docs.ch8_2_text"></p>
+        <img src="images/docs/sec8-island-states.png" alt="Island States" class="doc-image">
+        <h3 id="ch8_3" data-i18n="docs.ch8_3"></h3>
+        <p data-i18n="docs.ch8_3_text"></p>
+        <h3 id="ch8_4" data-i18n="docs.ch8_4"></h3>
+        <p data-i18n="docs.ch8_4_text"></p>
+        <img src="images/docs/sec8-content-area.png" alt="Content Area" class="doc-image">
+        <h3 id="ch8_5" data-i18n="docs.ch8_5"></h3>
+        <p data-i18n="docs.ch8_5_text"></p>
+        <h3 id="ch8_6" data-i18n="docs.ch8_6"></h3>
+        <p data-i18n="docs.ch8_6_text"></p>
+        <hr class="doc-divider">
+
+        <h2 id="ch9" data-i18n="docs.ch9"></h2>
+        <h3 id="ch9_1" data-i18n="docs.ch9_1"></h3>
+        <p data-i18n="docs.ch9_1_text"></p>
+        <h3 id="ch9_2" data-i18n="docs.ch9_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch9_2_text"></div>
+        <img src="images/docs/sec9-command-approval.png" alt="Command Approval" class="doc-image">
+        <img src="images/docs/sec9-clarification.png" alt="Clarification" class="doc-image">
+        <h3 id="ch9_3" data-i18n="docs.ch9_3"></h3>
+        <p data-i18n="docs.ch9_3_text"></p>
+        <h3 id="ch9_4" data-i18n="docs.ch9_4"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch9_4_text"></div>
+        <hr class="doc-divider">
+
+        <h2 id="ch10" data-i18n="docs.ch10"></h2>
+        <h3 id="ch10_1" data-i18n="docs.ch10_1"></h3>
+        <p data-i18n="docs.ch10_1_text"></p>
+        <img src="images/docs/sec10-settings.png" alt="Settings" class="doc-image">
+        <h3 id="ch10_2" data-i18n="docs.ch10_2"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch10_2_text"></div>
+        <img src="images/docs/sec10-model-config.png" alt="Model Configuration Dialog" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch11" data-i18n="docs.ch11"></h2>
+        <p data-i18n="docs.ch11_text"></p>
+        <hr class="doc-divider">
+
+        <h2 id="ch12" data-i18n="docs.ch12"></h2>
+        <h3 id="ch12_1" data-i18n="docs.ch12_1"></h3>
+        <p data-i18n="docs.ch12_1_text"></p>
+        <h3 id="ch12_2" data-i18n="docs.ch12_2"></h3>
+        <p data-i18n="docs.ch12_2_text"></p>
+        <h3 id="ch12_3" data-i18n="docs.ch12_3"></h3>
+        <div class="doc-highlight" data-i18n="docs.ch12_3_text"></div>
+        <img src="images/docs/sec11-shortcuts.png" alt="Keyboard Shortcuts" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch13" data-i18n="docs.ch13"></h2>
+        <h3 id="ch13_1" data-i18n="docs.ch13_1"></h3>
+        <p data-i18n="docs.ch13_1_text"></p>
+        <h3 id="ch13_2" data-i18n="docs.ch13_2"></h3>
+        <p data-i18n="docs.ch13_2_text"></p>
+        <img src="images/docs/sec13-themes.png" alt="Themes" class="doc-image">
+        <img src="images/docs/sec13-themes2.png" alt="Themes 2" class="doc-image">
+        <img src="images/docs/sec12-context-menu.png" alt="Context Menu" class="doc-image">
+        <img src="images/docs/sec12-context-menu2.png" alt="Context Menu 2" class="doc-image">
+        <img src="images/docs/sec14-faq.png" alt="FAQ" class="doc-image">
+        <img src="images/docs/sec14-faq2.png" alt="FAQ 2" class="doc-image">
+        <hr class="doc-divider">
+
+        <h2 id="ch14" data-i18n="docs.ch14"></h2>
+        <h3 id="ch14_1" data-i18n="docs.ch14_1"></h3>
+        <p data-i18n="docs.ch14_1_text"></p>
+        <h3 id="ch14_2" data-i18n="docs.ch14_2"></h3>
+        <p data-i18n="docs.ch14_2_text"></p>
+        <h3 id="ch14_3" data-i18n="docs.ch14_3"></h3>
+        <p data-i18n="docs.ch14_3_text"></p>
+        <h3 id="ch14_4" data-i18n="docs.ch14_4"></h3>
+        <p data-i18n="docs.ch14_4_text"></p>
+        <h3 id="ch14_5" data-i18n="docs.ch14_5"></h3>
+        <p data-i18n="docs.ch14_5_text"></p>
+        <h3 id="ch14_6" data-i18n="docs.ch14_6"></h3>
+        <p data-i18n="docs.ch14_6_text"></p>
+        <h3 id="ch14_7" data-i18n="docs.ch14_7"></h3>
+        <p data-i18n="docs.ch14_7_text"></p>
+      </main>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="6" fill="url(#logo-grad2)"/>
+          <path d="M7 9h14M7 14h10M7 19h12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <defs><linearGradient id="logo-grad2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        <span>Nexus Workbench</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/liufei/Nexus" target="_blank">GitHub</a>
+        <a href="docs.html" data-i18n="footer.docs"></a>
+        <a href="license.html" data-i18n="footer.license"></a>
+      </div>
+      <div class="footer-copy">
+        <p data-i18n="footer.copy"></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    (function () {
+      var TOC_STRUCTURE = [
+        { id: 'ch1', titleKey: 'docs.ch1' },
+        { id: 'ch1_1', titleKey: 'docs.ch1_1', sub: true },
+        { id: 'ch1_2', titleKey: 'docs.ch1_2', sub: true },
+        { id: 'ch1_3', titleKey: 'docs.ch1_3', sub: true },
+        { id: 'ch1_4', titleKey: 'docs.ch1_4', sub: true },
+        { id: 'ch2', titleKey: 'docs.ch2' },
+        { id: 'ch2_1', titleKey: 'docs.ch2_1', sub: true },
+        { id: 'ch2_2', titleKey: 'docs.ch2_2', sub: true },
+        { id: 'ch2_3', titleKey: 'docs.ch2_3', sub: true },
+        { id: 'ch2_4', titleKey: 'docs.ch2_4', sub: true },
+        { id: 'ch3', titleKey: 'docs.ch3' },
+        { id: 'ch3_1', titleKey: 'docs.ch3_1', sub: true },
+        { id: 'ch3_2', titleKey: 'docs.ch3_2', sub: true },
+        { id: 'ch3_3', titleKey: 'docs.ch3_3', sub: true },
+        { id: 'ch3_4', titleKey: 'docs.ch3_4', sub: true },
+        { id: 'ch3_5', titleKey: 'docs.ch3_5', sub: true },
+        { id: 'ch3_6', titleKey: 'docs.ch3_6', sub: true },
+        { id: 'ch4', titleKey: 'docs.ch4' },
+        { id: 'ch4_1', titleKey: 'docs.ch4_1', sub: true },
+        { id: 'ch4_2', titleKey: 'docs.ch4_2', sub: true },
+        { id: 'ch5', titleKey: 'docs.ch5' },
+        { id: 'ch5_1', titleKey: 'docs.ch5_1', sub: true },
+        { id: 'ch5_2', titleKey: 'docs.ch5_2', sub: true },
+        { id: 'ch6', titleKey: 'docs.ch6' },
+        { id: 'ch6_1', titleKey: 'docs.ch6_1', sub: true },
+        { id: 'ch6_2', titleKey: 'docs.ch6_2', sub: true },
+        { id: 'ch6_3', titleKey: 'docs.ch6_3', sub: true },
+        { id: 'ch6_4', titleKey: 'docs.ch6_4', sub: true },
+        { id: 'ch7', titleKey: 'docs.ch7' },
+        { id: 'ch7_1', titleKey: 'docs.ch7_1', sub: true },
+        { id: 'ch7_2', titleKey: 'docs.ch7_2', sub: true },
+        { id: 'ch8', titleKey: 'docs.ch8' },
+        { id: 'ch8_1', titleKey: 'docs.ch8_1', sub: true },
+        { id: 'ch8_2', titleKey: 'docs.ch8_2', sub: true },
+        { id: 'ch8_3', titleKey: 'docs.ch8_3', sub: true },
+        { id: 'ch8_4', titleKey: 'docs.ch8_4', sub: true },
+        { id: 'ch8_5', titleKey: 'docs.ch8_5', sub: true },
+        { id: 'ch8_6', titleKey: 'docs.ch8_6', sub: true },
+        { id: 'ch9', titleKey: 'docs.ch9' },
+        { id: 'ch9_1', titleKey: 'docs.ch9_1', sub: true },
+        { id: 'ch9_2', titleKey: 'docs.ch9_2', sub: true },
+        { id: 'ch9_3', titleKey: 'docs.ch9_3', sub: true },
+        { id: 'ch9_4', titleKey: 'docs.ch9_4', sub: true },
+        { id: 'ch10', titleKey: 'docs.ch10' },
+        { id: 'ch10_1', titleKey: 'docs.ch10_1', sub: true },
+        { id: 'ch10_2', titleKey: 'docs.ch10_2', sub: true },
+        { id: 'ch11', titleKey: 'docs.ch11' },
+        { id: 'ch12', titleKey: 'docs.ch12' },
+        { id: 'ch12_1', titleKey: 'docs.ch12_1', sub: true },
+        { id: 'ch12_2', titleKey: 'docs.ch12_2', sub: true },
+        { id: 'ch12_3', titleKey: 'docs.ch12_3', sub: true },
+        { id: 'ch13', titleKey: 'docs.ch13' },
+        { id: 'ch13_1', titleKey: 'docs.ch13_1', sub: true },
+        { id: 'ch13_2', titleKey: 'docs.ch13_2', sub: true },
+        { id: 'ch14', titleKey: 'docs.ch14' },
+        { id: 'ch14_1', titleKey: 'docs.ch14_1', sub: true },
+        { id: 'ch14_2', titleKey: 'docs.ch14_2', sub: true },
+        { id: 'ch14_3', titleKey: 'docs.ch14_3', sub: true },
+        { id: 'ch14_4', titleKey: 'docs.ch14_4', sub: true },
+        { id: 'ch14_5', titleKey: 'docs.ch14_5', sub: true },
+        { id: 'ch14_6', titleKey: 'docs.ch14_6', sub: true },
+        { id: 'ch14_7', titleKey: 'docs.ch14_7', sub: true }
+      ];
+
+      function buildToc() {
+        var toc = document.getElementById('docsToc');
+        if (!toc) return;
+        toc.innerHTML = '';
+        var lang = document.documentElement.lang || 'zh';
+        for (var i = 0; i < TOC_STRUCTURE.length; i++) {
+          var item = TOC_STRUCTURE[i];
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          a.href = '#' + item.id;
+          a.setAttribute('data-docs-toc', item.id);
+          if (item.sub) a.className = 'sub';
+          var parts = item.titleKey.split('.');
+          var val = I18N[lang];
+          for (var j = 0; j < parts.length; j++) {
+            if (val == null) break;
+            val = val[parts[j]];
+          }
+          a.textContent = val || item.titleKey;
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.getElementById(this.getAttribute('data-docs-toc'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          li.appendChild(a);
+          toc.appendChild(li);
+        }
+      }
+
+      function updateActiveToc() {
+        var headings = document.querySelectorAll('.docs-content h2, .docs-content h3');
+        var tocLinks = document.querySelectorAll('.docs-toc a');
+        if (!headings.length || !tocLinks.length) return;
+        var scrollPos = window.scrollY + 100;
+        var activeId = '';
+        for (var i = headings.length - 1; i >= 0; i--) {
+          if (headings[i].offsetTop <= scrollPos) { activeId = headings[i].id; break; }
+        }
+        tocLinks.forEach(function(link) {
+          link.classList.toggle('active', link.getAttribute('data-docs-toc') === activeId);
+        });
+      }
+
+      var langObserver = new MutationObserver(function() { buildToc(); updateActiveToc(); });
+      langObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+      window.addEventListener('scroll', function() { requestAnimationFrame(updateActiveToc); });
+
+      buildToc();
+      setTimeout(function() { buildToc(); updateActiveToc(); }, 100);
+    })();
+  </script>
+</body>
+</html>
