@@ -336,7 +336,7 @@
         var h3 = this.closest('.download-card').querySelector('h3');
         var os = h3 ? h3.textContent : 'Nexus';
         alert(
-          'Nexus ' + os + ' build coming soon.\n\nBuild from source: git clone https://github.com/liufei/Nexus'
+          'Nexus ' + os + ' build coming soon.\n\nBuild from source: git clone https://github.com/liufeicc/nexus'
         );
       });
     });
