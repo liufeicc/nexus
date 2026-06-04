@@ -327,7 +327,7 @@
   // ============================================================
 
   var DOWNLOAD_URLS = {
-    'Linux': 'https://github.com/liufeicc/nexus/releases/tag/v1.0.0',
+    'Linux': 'https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0.deb',
     'macOS': '',
     'Windows': ''
   };
