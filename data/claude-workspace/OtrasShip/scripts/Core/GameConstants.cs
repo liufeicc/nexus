@@ -19,9 +19,9 @@ public static class GameConstants
     /// <summary>母舰碰撞体半尺寸向量（用于矩形边界计算）</summary>
     public static readonly Vector2 MothershipHalfSize = new(MothershipHalfWidth, MothershipHalfHeight);
 
-    /// <summary>炮塔碰撞层（layer 8），位值 256</summary>
-    public const uint TurretCollisionLayer = 256;
+    /// <summary>炮塔碰撞层（layer 8），位值 128（1 << 7）</summary>
+    public const uint TurretCollisionLayer = 128;
 
-    /// <summary>友方战斗机碰撞层（layer 9），位值 256</summary>
+    /// <summary>友方战斗机碰撞层（layer 9），位值 256（1 << 8）</summary>
     public const uint PlayerFighterCollisionLayer = 256;
 }

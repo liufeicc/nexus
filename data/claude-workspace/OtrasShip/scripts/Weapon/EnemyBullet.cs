@@ -167,7 +167,7 @@ public partial class EnemyBullet : Area2D
     /// <summary>
     /// 炮塔命中检测 — 仅在子弹从母舰内部发射时（FiredInsideMothership=true）执行。
     /// 使用 GetOverlappingAreas() 查找当前位置重叠的炮塔。
-    /// 筛选条件：碰撞层包含 turret 层（layer 8，位值 256），且有存活的 HealthComponent。
+    /// 筛选条件：碰撞层包含 turret 层（layer 8，位值 128），且有存活的 HealthComponent。
     /// 命中后对炮塔造成伤害并标记 _hasHit，子弹由调用方回收。
     ///
     /// 注意：大型战舰从外部发射的子弹不执行此检测，
@@ -189,7 +189,7 @@ public partial class EnemyBullet : Area2D
             if (area == null || !IsInstanceValid(area)) continue;
             if (area == this) continue;
 
-            // 筛选炮塔层（layer 8，位值 256）
+            // 筛选炮塔层（layer 8，位值 128）
             if ((area.CollisionLayer & GameConstants.TurretCollisionLayer) == 0) continue;
 
             // 查找 HealthComponent 并造成伤害
