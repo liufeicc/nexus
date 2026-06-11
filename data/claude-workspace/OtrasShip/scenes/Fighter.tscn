@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/Fighter/Fighter.cs" id="1_fighter"]
+[ext_resource type="Script" path="res://scripts/AI/FlightMovement.cs" id="2_flight"]
+[ext_resource type="Script" path="res://scripts/AI/FighterAI.cs" id="3_ai"]
+
+[node name="Fighter" type="Area2D"]
+script = ExtResource("1_fighter")
+collision_layer = 256
+collision_mask = 16
+
+[node name="FlightMovement" type="Node" parent="."]
+script = ExtResource("2_flight")
+MaxSpeed = 400
+Acceleration = 300
+TurnSpeed = 6.0
+Drag = 2.0
+
+[node name="FighterAI" type="Node" parent="."]
+script = ExtResource("3_ai")
+AttackRange = 500
+ReturnHealthRatio = 0.3
+PatrolRadius = 700
+PatrolSpeed = 0.5
+ArrivalDistance = 50
