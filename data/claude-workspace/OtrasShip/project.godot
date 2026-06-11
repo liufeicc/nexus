@@ -11,18 +11,22 @@ config_version=5
 [application]
 
 config/name="OtrasShip"
+config/description="奥特拉斯星舰 - 太空飞船射击游戏"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.4", "C#")
 
 [autoload]
 
-GameManager="*res://scripts/GameManager.cs"
+GameManager="*res://scripts/Core/GameManager.cs"
+ResourceManager="*res://scripts/Core/ResourceManager.cs"
+BulletPool="*res://scripts/Core/BulletPool.cs"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=1920
+window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
+window/vsync/vsync_mode=0
 
 [dotnet]
 
@@ -30,19 +34,35 @@ project/assembly_name="OtrasShip"
 
 [input]
 
-fire={
-"deadzone": 0.2,
+shoot={
+"deadzone": 0.5,
 "events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)
 ]
 }
-camera_drag={
-"deadzone": 0.2,
-"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":4,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":3,"canceled":false,"pressed":true,"double_click":false,"script":null)
+click={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)
 ]
 }
 
 [layer_names]
 
-2d_physics/layer_1="starship"
-2d_physics/layer_2="enemies"
-2d_physics/layer_3="bullets"
+2d_physics/layer_1="mothership"
+2d_physics/layer_2="player_bullet"
+2d_physics/layer_3="enemy_fighter"
+2d_physics/layer_4="enemy_battleship"
+2d_physics/layer_5="enemy_ammo"
+2d_physics/layer_6="space_mine"
+2d_physics/layer_7="asteroid"
+2d_physics/layer_8="turret"
+2d_physics/layer_9="player_fighter"
+
+[physics]
+
+common/physics_ticks_per_second=120
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.02, 0.02, 0.06, 1)
