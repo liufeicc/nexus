@@ -365,22 +365,19 @@ public partial class Main : Node2D
         }
 
         // 尝试建造第一个可用的机库插槽
-        bool built = false;
-        for (int i = 0; i < TurretSlotManager.HangarSlotCount && !built; i++)
+        for (int i = 0; i < TurretSlotManager.HangarSlotCount; i++)
         {
             if (ResourceManager.Instance != null)
             {
                 ResourceManager.Instance.AddResource(TurretSlotManager.HangarBuildCost);
             }
-            slotManager.BuildHangar(i);
-            GD.Print($"[Main] 调试建造机库 {i}");
-            built = true;
+            if (slotManager.BuildHangar(i))
+            {
+                GD.Print($"[Main] 调试建造机库 {i}");
+                return;
+            }
         }
-
-        if (!built)
-        {
-            GD.Print("[Main] 所有机库插槽已满");
-        }
+        GD.Print("[Main] 所有机库插槽已满");
     }
 
     /// <summary>

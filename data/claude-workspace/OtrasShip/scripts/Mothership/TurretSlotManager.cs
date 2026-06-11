@@ -403,18 +403,18 @@ public partial class TurretSlotManager : Node2D
     // ─────────── 机库交互 ───────────
 
     /// <summary>
-    /// 建造机库 — 扣除资源并安装
+    /// 建造机库 — 扣除资源并安装。返回是否建造成功。
     /// </summary>
-    public void BuildHangar(int slotIndex)
+    public bool BuildHangar(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= HangarSlotCount) return;
-        if (_installedHangars[slotIndex] != null) return;
+        if (slotIndex < 0 || slotIndex >= HangarSlotCount) return false;
+        if (_installedHangars[slotIndex] != null) return false;
 
         // 扣除资源
         if (ResourceManager.Instance == null || !ResourceManager.Instance.TrySpend(HangarBuildCost))
         {
             GD.Print($"[TurretSlotManager] 资源不足！建造机库需要 {HangarBuildCost}");
-            return;
+            return false;
         }
 
         // 创建机库实例
@@ -438,6 +438,7 @@ public partial class TurretSlotManager : Node2D
         }
 
         GD.Print($"[TurretSlotManager] 建造机库到插槽 {slotIndex}，花费 {HangarBuildCost} 资源");
+        return true;
     }
 
     /// <summary>

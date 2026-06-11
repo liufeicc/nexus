@@ -51,13 +51,26 @@ public partial class FighterAI : Node
     private Node2D _mothership;
     private Node2D _currentTarget;
     private float _patrolAngle;
+    private bool _hasArrived = false;  // 防止 UpdateReturn 每帧重复发射 ArrivedAtMothership 信号
     private RandomNumberGenerator _rng = new();
 
     /// <summary>当前 AI 状态（供 Fighter 查询是否应射击）</summary>
     public State CurrentState => _currentState;
 
-    /// <summary>是否允许开火（仅 Combat 状态）</summary>
-    public bool CanFire => _currentState == State.Combat;
+    /// <summary>
+    /// 是否允许开火 — 仅在 Combat 状态且目标在 AttackRange 内时允许。
+    /// 超出攻击距离时继续追踪但不射击。
+    /// </summary>
+    public bool CanFire
+    {
+        get
+        {
+            if (_currentState != State.Combat) return false;
+            if (_currentTarget == null || !IsInstanceValid(_currentTarget)) return false;
+            float distSq = _owner.GlobalPosition.DistanceSquaredTo(_currentTarget.GlobalPosition);
+            return distSq <= AttackRange * AttackRange;
+        }
+    }
 
     /// <summary>当前战斗目标（可能为 null）</summary>
     public Node2D CurrentTarget => _currentTarget;
@@ -168,15 +181,18 @@ public partial class FighterAI : Node
 
     /// <summary>
     /// RETURN：飞向母舰，到达后发出信号并消失。
+    /// 使用 _hasArrived 标志防止每帧重复发射信号。
     /// </summary>
     private void UpdateReturn(float dt)
     {
         _flight.SetTarget(_mothership.GlobalPosition);
 
-        // 检查是否到达母舰
+        // 检查是否到达母舰（只发一次信号）
+        if (_hasArrived) return;
         float dist = _owner.GlobalPosition.DistanceTo(_mothership.GlobalPosition);
         if (dist <= ArrivalDistance)
         {
+            _hasArrived = true;
             EmitSignal(SignalName.ArrivedAtMothership);
         }
     }
@@ -197,6 +213,8 @@ public partial class FighterAI : Node
     {
         if (_currentState == newState) return;
         _currentState = newState;
+        // 进入返航时重置标志，离开返航时也重置（支持多次 ForceReturn）
+        if (newState == State.Return) _hasArrived = false;
         EmitSignal(SignalName.StateChanged, newState.ToString());
     }
 
