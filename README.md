@@ -93,8 +93,6 @@ npm run build:win
 
 On first launch, an onboarding wizard guides you through:
 
-![Welcome Screen](docs/images/welcome.png)
-
 1. **Welcome**: Software logo and introduction
 2. **Model Configuration**: Configure AI model connection (Provider, API URL, API Key, Model Name)
 3. **Connection Test**: Verify the model connection works
@@ -104,8 +102,6 @@ You can skip the configuration and set it up later in Settings.
 ### UI Overview
 
 The main interface consists of:
-
-![Main Interface](docs/images/main.png)
 
 1. **Header**: Logo, New Session button, Theme switcher, Settings, Help
 2. **Sidebar**: Session management (resizable 160-400px, collapsible)
