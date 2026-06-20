@@ -35,6 +35,9 @@ dist-release/
 # Superpowers
 .superpowers/
 
+# Documentation
+docs/
+
 # Environment
 .env
 .env.local
