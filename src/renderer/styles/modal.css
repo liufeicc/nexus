@@ -1,0 +1,522 @@
+/**
+ * 模态框样式
+ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100001;
+  animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  min-width: 360px;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.2s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-icon {
+  width: 24px;
+  height: 24px;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-btn-cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.modal-btn-cancel:hover {
+  background-color: var(--border-color);
+}
+
+.modal-btn-confirm {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.modal-btn-confirm:hover {
+  background-color: var(--accent-hover);
+}
+
+.modal-btn-apply {
+  background-color: #10b981;
+  color: white;
+}
+
+.modal-btn-apply:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.modal-btn-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-test-model {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: white;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-test-model:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.btn-test-model:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-test-loading {
+  animation: pulse-loading 1.5s infinite;
+}
+
+@keyframes pulse-loading {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+.test-result {
+  margin: -8px 0 12px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.test-result-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.test-result-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.rename-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.rename-input:focus {
+  border-color: var(--accent-color);
+}
+
+.rename-input::placeholder {
+  color: var(--text-muted);
+}
+
+.common-paths-list {
+  padding: 8px 0;
+}
+
+.common-path-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.common-path-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.common-path-item .icon {
+  font-size: 18px;
+}
+
+.common-path-item .name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.common-path-item .path {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.common-path-delete-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+  padding: 0;
+  opacity: 0;
+}
+
+.common-path-item:hover .common-path-delete-btn {
+  opacity: 1;
+}
+
+.common-path-delete-btn:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.common-path-delete-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.custom-path-section {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.custom-path-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/**
+ * 目录档案 .NEXUS.md 维护窗口
+ * 配合 react-complex-tree 使用
+ */
+
+.nexus-profile-modal {
+  width: 800px;
+  max-width: 90vw;
+}
+
+.nexus-profile-body {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  min-height: 400px;
+  max-height: 600px;
+}
+
+/* 左侧目录树 */
+/* ===== 目录树 ===== */
+.nexus-profile-tree {
+  width: 240px;
+  min-width: 200px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--bg-tertiary);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* 覆盖 react-complex-tree 默认样式 */
+.nexus-profile-tree .rct-tree-root {
+  padding: 8px 0;
+  background-color: transparent;
+  font-family: inherit;
+}
+
+.nexus-profile-tree .rct-tree-root-rtl-support {
+  padding: 0;
+}
+
+.nexus-profile-tree .rct-tree-item-li {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nexus-profile-tree .rct-tree-item-title-container {
+  height: 26px;
+  border-top: none;
+  border-bottom: none;
+}
+
+.nexus-profile-tree .rct-tree-item-button {
+  height: 26px;
+  padding: 0 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.nexus-profile-tree .rct-tree-item-button:hover {
+  background-color: var(--bg-secondary);
+}
+
+.nexus-profile-tree .rct-tree-item-arrow {
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nexus-profile-tree .rct-tree-item-arrow:hover {
+  color: var(--text-primary);
+}
+
+.nexus-profile-tree .rct-tree-item-arrow-path {
+  fill: var(--text-muted);
+}
+
+.nexus-profile-tree .rct-tree-item-arrow:hover .rct-tree-item-arrow-path {
+  fill: var(--text-primary);
+}
+
+.nexus-profile-tree .rct-tree-items-container {
+  margin: 0;
+  padding: 0;
+}
+
+/* 选中状态 */
+.nexus-profile-tree .rct-tree-item-title-container-selected {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.nexus-profile-tree .rct-tree-item-arrow-selected .rct-tree-item-arrow-path {
+  fill: white;
+}
+
+/* 展开状态 */
+.nexus-profile-tree .rct-tree-item-title-container-expanded {
+  /* additional styles if needed */
+}
+
+/* 右侧编辑区 */
+.nexus-profile-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  min-width: 0;
+}
+
+.nexus-profile-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.nexus-profile-dir-path {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 未保存修改指示器 */
+.nexus-profile-dirty {
+  color: var(--accent-color);
+  font-size: 14px;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.nexus-profile-dir-path {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.nexus-profile-generating {
+  font-size: 12px;
+  color: var(--accent-color);
+}
+
+/* 保留用于未来可能的加载状态 */
+
+.nexus-profile-loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.nexus-profile-textarea {
+  flex: 1;
+  min-height: 200px;
+  max-height: 350px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.6;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.nexus-profile-textarea:focus {
+  border-color: var(--accent-color);
+}
+
+.nexus-profile-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.nexus-profile-char-count {
+  margin-top: 4px;
+  text-align: right;
+  font-size: 12px;
+}
+
+.count-normal {
+  color: var(--text-muted);
+}
+
+.count-over {
+  color: #ef4444;
+}
+
+/* 底部按钮区 */
+.nexus-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.nexus-profile-actions-spacer {
+  flex: 1;
+}
+
+.modal-btn-secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-btn-secondary:hover:not(:disabled) {
+  background-color: var(--border-color);
+}
+
+.modal-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 确认关闭弹窗 ===== */
+.confirm-modal {
+  width: 400px;
+  max-width: 90vw;
+}
+
+.confirm-message {
+  color: var(--text-primary);
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+

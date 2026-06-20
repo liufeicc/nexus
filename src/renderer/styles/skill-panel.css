@@ -1,0 +1,242 @@
+/**
+ * Skill 面板样式（复用 Task 面板的布局和样式）
+ */
+
+/* 覆盖层 */
+.skill-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+  background: transparent;
+}
+
+/* 面板主体 */
+.skill-panel {
+  width: 680px;
+  max-height: 70vh;
+  min-height: 480px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(56, 189, 248, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部 */
+.skill-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  background: rgba(10, 15, 30, 0.95);
+}
+
+.skill-panel-header h3 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 2px;
+}
+
+.skill-panel-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #b0bec5;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.skill-panel-close:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
+/* 加载中 */
+.skill-panel-loading {
+  padding: 20px;
+  text-align: center;
+  color: #78909c;
+  font-size: 13px;
+}
+
+/* 错误 */
+.skill-panel-error {
+  padding: 12px 16px;
+  color: #f87171;
+  font-size: 13px;
+  background: rgba(248, 113, 113, 0.05);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.1);
+}
+
+/* 技能列表 */
+.skill-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 0;
+}
+
+/* 空状态 */
+.skill-empty {
+  padding: 24px;
+  text-align: center;
+  color: #78909c;
+  font-size: 13px;
+}
+
+/* 技能项 */
+.skill-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-left: 2px solid transparent;
+}
+
+.skill-item:hover {
+  background: rgba(56, 189, 248, 0.06);
+  border-left-color: rgba(56, 189, 248, 0.3);
+}
+
+.skill-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.skill-item-name {
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.skill-item-category {
+  color: #38bdf8;
+  font-size: 11px;
+  padding: 1px 6px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 3px;
+}
+
+.skill-item-desc {
+  color: #78909c;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.skill-item-delete {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #4a5568;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+  opacity: 0;
+}
+
+.skill-item:hover .skill-item-delete {
+  opacity: 1;
+}
+
+.skill-item-delete:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+/* 技能详情 */
+.skill-detail {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.skill-back-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.skill-back-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+/* 返回行 */
+.skill-detail-back-row {
+  display: flex;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+}
+
+.skill-detail h4 {
+  margin: 0;
+  padding: 12px 16px;
+  color: #e2e8f0;
+  font-size: 15px;
+}
+
+/* 内容只读区 */
+.skill-detail-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 12px;
+  margin: 0;
+  color: #c8d6e5;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: transparent;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  border: none;
+  tab-size: 2;
+}

@@ -1,0 +1,119 @@
+/**
+ * 灵动岛头部、消息、打字机和进度线样式
+ */
+
+.island-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.island-type-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.island-title {
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.island-type-tag {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.island-container[data-type='info'] .island-type-icon { color: var(--c-cyan); }
+.island-container[data-type='info'] .island-type-tag { color: var(--c-cyan); background: rgba(56, 189, 248, 0.08); }
+
+.island-container[data-type='success'] .island-type-icon { color: var(--c-green); }
+.island-container[data-type='success'] .island-type-tag { color: var(--c-green); background: rgba(52, 211, 153, 0.08); }
+
+.island-container[data-type='warning'] .island-type-icon { color: var(--c-yellow); }
+.island-container[data-type='warning'] .island-type-tag { color: var(--c-yellow); background: rgba(251, 191, 36, 0.08); }
+
+.island-container[data-type='error'] .island-type-icon { color: var(--c-red); }
+.island-container[data-type='error'] .island-type-tag { color: var(--c-red); background: rgba(248, 113, 113, 0.08); }
+
+.island-message {
+  color: #c8d6e5;
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: break-word;
+  min-height: 20px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  background: var(--c-cyan);
+  box-shadow: 0 0 4px var(--c-cyan);
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink 0.8s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typewriter-done .typewriter-cursor {
+  animation: none;
+  opacity: 0;
+}
+
+.island-close-btn-inline {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.island-close-btn-inline:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: var(--c-red);
+}
+
+.island-progress-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.06);
+  overflow: hidden;
+  z-index: 3;
+}
+
+.island-progress-fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  transition: transform linear;
+}
+
+.island-container[data-type='info'] .island-progress-fill { background: var(--c-cyan); }
+.island-container[data-type='success'] .island-progress-fill { background: var(--c-green); }
+.island-container[data-type='warning'] .island-progress-fill { background: var(--c-yellow); }
+.island-container[data-type='error'] .island-progress-fill { background: var(--c-red); }

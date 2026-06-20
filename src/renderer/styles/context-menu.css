@@ -1,0 +1,79 @@
+/**
+ * 右键菜单样式
+ */
+
+.context-menu {
+  position: absolute;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 1000;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.context-menu-item:hover:not(.disabled) {
+  background-color: var(--bg-tertiary);
+}
+
+.context-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.context-menu-item.disabled:hover {
+  background-color: transparent;
+}
+
+.context-menu-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.context-menu-submenu {
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  opacity: 0.5;
+}
+
+.context-menu-submenu-panel {
+  position: absolute;
+  left: 100%;
+  top: -4px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 1001;
+}
+
+.context-menu-submenu-panel .context-menu-item {
+  padding: 8px 10px;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 6px 0;
+}

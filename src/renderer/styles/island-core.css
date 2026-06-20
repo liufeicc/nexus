@@ -1,0 +1,58 @@
+/**
+ * 灵动岛变量和主容器样式
+ */
+
+.dynamic-island {
+  --c-cyan: #38bdf8;
+  --c-green: #34d399;
+  --c-yellow: #fbbf24;
+  --c-red: #f87171;
+  --c-purple: #a78bfa;
+
+  --bg: rgba(15, 23, 42, 0.92);
+  --border: rgba(56, 189, 248, 0.25);
+  --text: #f1f5f9;
+  --text-dim: #b0bec5;
+  --font: 'Orbitron', 'Share Tech Mono', 'JetBrains Mono', 'SF Mono', monospace, -apple-system, sans-serif;
+  --font-mono: 'Orbitron', 'Share Tech Mono', 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
+}
+
+.dynamic-island {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100000;
+  font-family: var(--font);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: no-drag;
+}
+
+.dynamic-island:active {
+  cursor: grabbing;
+}
+
+.dynamic-island.visible {
+  cursor: default;
+}
+
+.dynamic-island.visible:active {
+  cursor: default;
+}
+
+.island-accent-bar {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 2px;
+  z-index: 4;
+}
+
+.island-container[data-type='info'] .island-accent-bar { background: var(--c-cyan); box-shadow: 0 0 8px var(--c-cyan); }
+.island-container[data-type='success'] .island-accent-bar { background: var(--c-green); box-shadow: 0 0 8px var(--c-green); }
+.island-container[data-type='warning'] .island-accent-bar { background: var(--c-yellow); box-shadow: 0 0 8px var(--c-yellow); }
+.island-container[data-type='error'] .island-accent-bar { background: var(--c-red); box-shadow: 0 0 8px var(--c-red); }

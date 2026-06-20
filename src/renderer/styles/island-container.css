@@ -1,0 +1,110 @@
+/**
+ * 灵动岛面板主体样式（容器/高光/边框/动画）
+ */
+
+.island-container {
+  position: relative;
+  width: 800px;
+  max-height: 36px;
+  height: auto;
+  overflow: hidden;
+  opacity: 1;
+  border-radius: 14px;
+
+  background: linear-gradient(170deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.97) 100%);
+
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 16px 60px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(56, 189, 248, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  transition:
+    max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease,
+    opacity 0.35s ease;
+}
+
+.island-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    160deg,
+    rgba(56, 189, 248, 0.4) 0%,
+    rgba(167, 139, 250, 0.2) 30%,
+    transparent 60%,
+    rgba(56, 189, 248, 0.15) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.island-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 3%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.15) 0%, transparent 40%),
+    linear-gradient(90deg,
+      transparent 5%,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.05) 75%,
+      transparent 95%
+    );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.island-container.visible {
+  max-height: 800px;
+  border-radius: 14px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    0 20px 70px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(56, 189, 248, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.island-container.idle {
+  max-height: 36px;
+  animation: idle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes idle-pulse {
+  0%, 100% {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.5),
+      0 4px 8px rgba(0, 0, 0, 0.4),
+      0 16px 60px rgba(0, 0, 0, 0.3),
+      0 0 15px rgba(56, 189, 248, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(56, 189, 248, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 10px 35px rgba(0, 0, 0, 0.55),
+      0 5px 10px rgba(0, 0, 0, 0.4),
+      0 18px 65px rgba(0, 0, 0, 0.35),
+      0 0 28px rgba(56, 189, 248, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+}

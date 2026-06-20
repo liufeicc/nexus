@@ -1,0 +1,214 @@
+/**
+ * Clarify 弹窗样式（科幻风格）
+ */
+
+.hud-clarify-panel {
+  position: relative;
+  width: 480px;
+  max-width: 90vw;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: hudSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(10, 15, 30, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(56, 189, 248, 0.08);
+}
+
+.hud-clarify-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hud-accent-info {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.hud-icon-info {
+  color: #38bdf8;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));
+}
+
+.hud-tag-info {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.hud-question {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #e2e8f0;
+  margin: 0 0 14px;
+}
+
+.hud-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hud-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.hud-choice:hover {
+  background: rgba(56, 189, 248, 0.06);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.hud-choice.selected {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.hud-choice input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #78909c;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.hud-choice input[type="radio"]:checked {
+  border-color: #38bdf8;
+  background: #38bdf8;
+}
+
+.hud-choice input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(10, 15, 30, 0.9);
+}
+
+.hud-choice-label {
+  flex: 1;
+  font-size: 14px;
+  color: #c8d6e5;
+}
+
+.hud-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.hud-choice-text {
+  font-size: 14px;
+  color: #c8d6e5;
+}
+
+.hud-choice-custom {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 14px;
+}
+
+.hud-custom-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.hud-custom-input:focus {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1);
+}
+
+.hud-custom-input::placeholder {
+  color: #546e7a;
+}
+
+.hud-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+  line-height: 1.6;
+  transition: border-color 0.15s ease;
+}
+
+.hud-textarea:focus {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1);
+}
+
+.hud-textarea::placeholder {
+  color: #546e7a;
+}
+
+.hud-clarify-footer {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hud-btn-cancel {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #78909c;
+}
+.hud-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #b0bec5;
+}
+
+.hud-btn-submit {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #67d8f9;
+}
+.hud-btn-submit:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+}
