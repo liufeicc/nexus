@@ -333,7 +333,7 @@
 
 .file-viewer .cm-content {
   white-space: pre-wrap;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 /* 隐藏 CodeMirror 内置搜索面板（使用自定义 FileSearchBar） */

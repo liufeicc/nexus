@@ -20,6 +20,10 @@ import {
   getSearchQuery,
 } from '@codemirror/search'
 import { defaultKeymap } from '@codemirror/commands'
+import { useAppStore } from '../../store'
+
+/** 深色主题 ID 集合（背景色暗，需要亮色文字） */
+const DARK_THEMES = new Set(['deepblue', 'green'])
 
 /** 文件查看器中选中文本的 getter 注册表（按 editorId 隔离，供 ContextMenu 读取） */
 const cmGetSelectedTextMap = new Map<string, () => string>()
@@ -63,6 +67,8 @@ export function CodeMirrorEditor({
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const isInitializingRef = useRef(true)
+  const currentThemeId = useAppStore(state => state.currentThemeId)
+  const isDarkTheme = DARK_THEMES.has(currentThemeId)
 
   // 向父组件暴露获取选中文本的函数（按 editorId 注册）
   useEffect(() => {
@@ -184,11 +190,46 @@ export function CodeMirrorEditor({
   useEffect(() => {
     if (!containerRef.current || viewRef.current) return
 
+    // 根据主题 ID 选择 CodeMirror 主题：深色主题用 oneDark，浅色主题用 CSS 变量适配
+    const themeExtensions = isDarkTheme
+      ? [oneDark]
+      : [
+          EditorView.theme({
+            // 浅色主题：使用 CSS 变量，自动跟随应用主题切换
+            '&': {
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+            },
+            '.cm-content': {
+              caretColor: 'var(--text-primary)',
+            },
+            '.cm-cursor': {
+              borderLeftColor: 'var(--text-primary)',
+            },
+            '.cm-selectionBackground, .cm-selectionBackground ::selection': {
+              backgroundColor: 'var(--accent-color) !important',
+              color: '#ffffff !important',
+            },
+            '&.cm-focused .cm-selectionBackground, &.cm-focused .cm-selectionBackground ::selection': {
+              backgroundColor: 'var(--accent-color) !important',
+            },
+            // 语法高亮：使用应用的次级文本色和弱化文本色
+            '.cm-keyword': { color: 'var(--accent-color)' },
+            '.cm-string': { color: 'var(--text-secondary)' },
+            '.cm-comment': { color: 'var(--text-muted)', fontStyle: 'italic' },
+            '.cm-number': { color: 'var(--text-secondary)' },
+            '.cm-variableName': { color: 'var(--text-primary)' },
+            '.cm-operator': { color: 'var(--text-secondary)' },
+            '.cm-bracket': { color: 'var(--text-muted)' },
+          }),
+        ]
+
     const startState = EditorState.create({
       doc: content,
       extensions: [
         basicSetup,
-        oneDark,
+        ...themeExtensions,
+        EditorView.lineWrapping, // 启用自动换行（CM6 官方扩展，调整内部行测量逻辑）
         keymap.of([
           ...defaultKeymap,
           { key: 'Ctrl-f', preventDefault: true, run: () => { onSearchOpenChange(true); return true } },
@@ -211,7 +252,7 @@ export function CodeMirrorEditor({
             tabSize: '4',
             padding: '12px',
           },
-          '.cm-content': { padding: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-all' },
+          '.cm-content': { padding: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' },
           '.cm-gutters': { display: 'none' },
         }),
       ],
@@ -232,7 +273,7 @@ export function CodeMirrorEditor({
       view.destroy()
       viewRef.current = null
     }
-  }, [])
+  }, [isDarkTheme])
 
   // 内容变化时同步
   useEffect(() => {
