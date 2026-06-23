@@ -37,6 +37,7 @@ public partial class RepairPlatform : Node2D
     private List<RepairBot> _activeBots = new();
     private float _spawnTimer = 0f;
     private Queue<RepairBot> _pendingRelease = new();
+    private Area2D _clickArea;
 
     #endregion
 
@@ -55,6 +56,45 @@ public partial class RepairPlatform : Node2D
     public override void _Ready()
     {
         GD.Print($"[RepairPlatform] 初始化完成，最大机器人数: {MaxBots}，成本: {BotCost}");
+
+        // 创建点击区域（100x100 像素），点击后购买机器人
+        _clickArea = new Area2D();
+        _clickArea.Name = "ClickArea";
+        _clickArea.InputPickable = true;
+        _clickArea.CollisionLayer = 0;
+        _clickArea.CollisionMask = 0;
+        AddChild(_clickArea);
+
+        var collision = new CollisionShape2D();
+        collision.Name = "CollisionShape2D";
+        var shape = new RectangleShape2D();
+        shape.Size = new Vector2(100, 100);
+        collision.Shape = shape;
+        _clickArea.AddChild(collision);
+
+        _clickArea.InputEvent += OnClickAreaInput;
+    }
+
+    /// <summary>
+    /// 点击区域输入处理：鼠标左键点击时购买机器人
+    /// </summary>
+    private void OnClickAreaInput(Node viewport, InputEvent @event, long shapeIdx)
+    {
+        if (@event is InputEventMouseButton mouseButton
+            && mouseButton.ButtonIndex == MouseButton.Left
+            && mouseButton.Pressed)
+        {
+            GD.Print("[RepairPlatform] 点击购买机器人");
+            bool success = BuyBot();
+            if (success)
+            {
+                GD.Print("[RepairPlatform] 购买成功！");
+            }
+            else
+            {
+                GD.PrintErr("[RepairPlatform] 购买失败（资源不足或已达上限）");
+            }
+        }
     }
 
     public override void _Process(double delta)
