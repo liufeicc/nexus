@@ -16,10 +16,11 @@ namespace OtrasShip.Entity;
 /// 节点树：
 ///   RepairBot (Area2D)
 ///     ├── FirstSlotDummy（占位，防 Godot 4 bug）
-///     ├── Sprite2D（绿色小圆形占位图）
 ///     ├── HealthComponent（有血量但不会被敌人命中）
-///     ├── CollisionShape2D（暂无物理碰撞）
+///     ├── Sprite2D（绿色小圆形占位图）
 ///     └── RepairBotAI（AI 状态机）
+///
+/// 注意：无 CollisionShape2D — 维修机器人不参与物理碰撞（飞行单位规则）。
 /// </summary>
 public partial class RepairBot : EntityBase
 {
@@ -75,12 +76,10 @@ public partial class RepairBot : EntityBase
 
         EntityName = "维修机器人";
 
-        // ── 代码创建 Sprite2D（绿色小圆形占位图）──
+        // ── 代码创建 Sprite2D（绿色小圆形）──
         var sprite = new Sprite2D();
         sprite.Name = "Sprite2D";
-        // 使用 PlaceholderArt 圆形占位（绿色，直径 20px）
-        // 正式美术替换时：sprite.Texture = GD.Load<Texture2D>("res://assets/sprites/repair_bot.png")
-        PlaceholderArt.ApplyCircle(sprite, 20, new Color(0, 1f, 0.5f));
+        sprite.Texture = GD.Load<Texture2D>("res://assets/sprites/repair_bot.png");
         AddChild(sprite);
 
         // ── 代码创建 RepairBotAI 状态机（作为子节点）──
