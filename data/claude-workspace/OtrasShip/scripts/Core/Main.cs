@@ -187,10 +187,6 @@ public partial class Main : Node2D
                     case Key.Key0:
                         RecallAllFighters();
                         break;
-                    // 按 R：购买维修机器人
-                    case Key.R:
-                        BuyRepairBot();
-                        break;
                     // 按 L：切换目标线显示
                     case Key.L:
                         DebugManager.ToggleShowTargetLines(GetTree());
@@ -218,7 +214,7 @@ public partial class Main : Node2D
         // 调试模式下显示状态和操作提示
         var collisionStatus = DebugManager.ShowCollisions ? "显示" : "隐藏";
         var targetLineStatus = DebugManager.ShowTargetLines ? "显示" : "隐藏";
-        label.Text = $"[调试模式] SHIFT+T 退出 | 1:碰撞({collisionStatus}) | 2:敌人 | 3:批量敌人 | 4:空雷 | 5:散布空雷 | 6:陨石 | 7:批量陨石 | 8:战舰 | 0:召回 | R:维修机器人 | L:目标线({targetLineStatus})";
+        label.Text = $"[调试模式] SHIFT+T 退出 | 1:碰撞({collisionStatus}) | 2:敌人 | 3:批量敌人 | 4:空雷 | 5:散布空雷 | 6:陨石 | 7:批量陨石 | 8:战舰 | 0:召回 | L:目标线({targetLineStatus})";
     }
 
     // ─────────── 生成逻辑 ───────────
@@ -369,20 +365,4 @@ public partial class Main : Node2D
 
     // ─────────── 维修平台调试 ───────────
 
-    /// <summary>
-    /// 调试：购买一个维修机器人。
-    /// 通过场景树查找母舰的 RepairPlatform 节点并调用 BuyBot()。
-    /// </summary>
-    private void BuyRepairBot()
-    {
-        var mothership = GetNodeOrNull<Mothership.Mothership>("Mothership");
-        if (mothership?.RepairPlatform != null)
-        {
-            mothership.RepairPlatform.BuyBot();
-        }
-        else
-        {
-            GD.PrintErr("[Main] 母舰或维修平台未找到，无法购买维修机器人");
-        }
-    }
 }
