@@ -81,8 +81,12 @@ public partial class RepairBotAI : Node
         }
 
         // 维修平台：RepairBot 的父节点链中找到 RepairPlatform，
-        // 约定 RepairBot 是 RepairPlatform 的子节点，取父节点即可
-        _platform = _owner.GetParentOrNull<Node2D>();
+        // 约定 RepairBot 是 RepairPlatform 的子节点，取父节点即可。
+        // 如果平台通过 SetPlatform 显式设置，则优先使用显式值。
+        if (_platform == null)
+        {
+            _platform = _owner.GetParentOrNull<Node2D>();
+        }
 
         ChangeState(BotState.IDLE);
     }
@@ -104,6 +108,32 @@ public partial class RepairBotAI : Node
             case BotState.REPAIRING:
                 UpdateRepairing(dt);
                 break;
+        }
+    }
+
+    // ─────────── 公开方法 ───────────
+
+    /// <summary>
+    /// 显式设置所属维修平台。
+    /// 优先于 _Ready 中自动获取（从父节点链推断），
+    /// 适用于 RepairBot 尚未挂到平台下方就需要指定平台的场景。
+    /// </summary>
+    /// <param name="platform">维修平台节点（Node2D）</param>
+    public void SetPlatform(Node2D platform)
+    {
+        _platform = platform;
+    }
+
+    /// <summary>
+    /// 激活机器人，从 IDLE 状态开始扫描受损目标。
+    /// 如果当前不在 IDLE 状态则忽略。
+    /// </summary>
+    public void Activate()
+    {
+        if (_currentState == BotState.IDLE)
+        {
+            // 重置扫描计时器，立即执行第一次扫描
+            _scanTimer = ScanInterval;
         }
     }
 
