@@ -189,7 +189,16 @@ export function createSimpleActions(set: SetFn, get: GetFn): Partial<AppState> {
       return newState
     }),
 
-    setActivePanelId: (panelId: string | null) => set({ activePanelId: panelId }),
+    setActivePanelId: (panelId: string | null) => set((state) => {
+      // 焦点切换到非终端面板时，清除终端选区状态标记
+      // 防止终端残留选区状态导致全局 Ctrl+C 被误拦截（文件面板复制失效）
+      const targetPanel = panelId ? state.panels.find((p) => p.id === panelId) : null
+      const shouldClear = !targetPanel || targetPanel.panelType !== 'terminal'
+      return {
+        activePanelId: panelId,
+        ...(shouldClear ? { hasTerminalSelection: false } : {}),
+      }
+    }),
 
     setLayout: (layout: LayoutTree | null) => set((state: AppState) => {
       const newState: Partial<AppState> = { layout }

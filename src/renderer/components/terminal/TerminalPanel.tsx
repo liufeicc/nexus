@@ -312,6 +312,12 @@ export function TerminalPanel({ panelId, ptyId, cwd }: TerminalPanelProps) {
       // 右键菜单：缓存终端选中文本
       const xtermEl = terminal.element
       const handleXtermMouseDown = (e: MouseEvent) => {
+        // 鼠标按下时立即将此终端面板设为活跃面板
+        // 解决：xterm 处理拖动选择时可能拦截 click 冒泡，导致 BasePanel 的 onClick 不触发
+        // 使用 capture 阶段确保在 xterm 内部处理之前执行
+        if (useAppStore.getState().activePanelId !== panelId) {
+          useAppStore.getState().setActivePanelId(panelId)
+        }
         if (e.button === 2) {
           const text = terminal.getSelection()
           if (text && text.length > 0) {
@@ -376,6 +382,43 @@ export function TerminalPanel({ panelId, ptyId, cwd }: TerminalPanelProps) {
       }
       window.addEventListener('terminal-focus', handleGlobalFocus)
 
+      // 监听全局 terminal-clear-selection 事件
+      // 当本终端失去焦点时，由 BasePanel 派发（携带失去焦点的面板 ID），清除视觉选区及缓存
+      // 使用 setTimeout(0) 将清除操作延迟到当前事件循环结束后，
+      // 确保在 xterm.js 处理完自身的 mousedown/mouseup 事件后再执行清除，
+      // 避免 xterm 后续事件处理重新建立选区
+      const handleClearSelection = (e: Event) => {
+        const detail = (e as CustomEvent).detail
+        if (detail?.panelId === panelId) {
+          setTimeout(() => {
+            if (terminalInstance.current) {
+              terminalInstance.current.clearSelection()
+            }
+            cachedSelectionRef.current = ''
+            useAppStore.getState().setTerminalSelection(false)
+          }, 0)
+        }
+      }
+      window.addEventListener('terminal-clear-selection', handleClearSelection)
+
+      // 监听 xterm textarea 的 blur 事件（兜底机制）
+      // 当终端真正失去焦点（焦点转移到其他面板或其他元素）时，清除选区
+      // 使用 requestAnimationFrame 延迟检查，确保 activePanelId 状态已更新
+      const textarea = xtermEl?.querySelector('.xterm-helper-textarea')
+      const handleTextareaBlur = () => {
+        requestAnimationFrame(() => {
+          // 只有当本面板不再是活跃面板时，才清除选区
+          if (useAppStore.getState().activePanelId !== panelId) {
+            if (terminalInstance.current) {
+              terminalInstance.current.clearSelection()
+            }
+            cachedSelectionRef.current = ''
+            useAppStore.getState().setTerminalSelection(false)
+          }
+        })
+      }
+      textarea?.addEventListener('blur', handleTextareaBlur)
+
       // 保存清理函数到外部变量，由 useEffect 的 cleanup 统一调用
       innerCleanup = () => {
         window.removeEventListener('resize', handleResize)
@@ -390,6 +433,8 @@ export function TerminalPanel({ panelId, ptyId, cwd }: TerminalPanelProps) {
         window.removeEventListener('terminal-copy', handleCopy)
         window.removeEventListener('terminal-paste', handlePaste)
         window.removeEventListener('terminal-focus', handleGlobalFocus)
+        window.removeEventListener('terminal-clear-selection', handleClearSelection)
+        textarea?.removeEventListener('blur', handleTextareaBlur)
         terminalContainer?.removeEventListener('focus', handleTerminalFocus, true)
         terminal.dispose()
         // 如果此面板是 Nexus 连接中的面板，自动断开

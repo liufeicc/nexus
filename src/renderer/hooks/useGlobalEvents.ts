@@ -121,6 +121,16 @@ function executeShortcut(action: ShortcutAction): void {
       const nextIndex = (currentIndex + 1) % panelIds.length
       const nextPanelId = panelIds[nextIndex]
 
+      // 若当前面板是终端，通知其清除选区（与点击切换面板行为保持一致）
+      const currentPanel = state.panels.find((p) => p.id === currentPanelId)
+      if (currentPanel && currentPanel.panelType === 'terminal') {
+        window.dispatchEvent(
+          new CustomEvent('terminal-clear-selection', {
+            detail: { panelId: currentPanelId },
+          })
+        )
+      }
+
       state.setActivePanelId(nextPanelId)
 
       // 通知新面板获取终端焦点

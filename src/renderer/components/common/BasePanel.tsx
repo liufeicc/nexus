@@ -47,6 +47,7 @@ export function BasePanel({
     setActivePanelId,
     draggingPanelId,
     dropTargetPanelId,
+    panels,
     closePanel,
     showContextMenu,
   } = useAppStore()
@@ -65,6 +66,20 @@ export function BasePanel({
 
   // 点击面板选中
   const handleSelectPanel = () => {
+    // 若当前获得焦点的是非终端面板，通知失去焦点的终端清除视觉选区
+    // 需在 setActivePanelId 之前派发，确保能读取到旧的 activePanelId
+    const prevActivePanelId = useAppStore.getState().activePanelId
+    const prevActivePanel = prevActivePanelId
+      ? panels.find((p) => p.id === prevActivePanelId)
+      : null
+    if (prevActivePanel && prevActivePanel.panelType === 'terminal') {
+      window.dispatchEvent(
+        new CustomEvent('terminal-clear-selection', {
+          detail: { panelId: prevActivePanelId },
+        })
+      )
+    }
+
     setActivePanelId(panelId)
     // 通知终端面板获取输入焦点
     window.dispatchEvent(new CustomEvent('terminal-focus', { detail: { panelId } }))
