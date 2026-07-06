@@ -257,4 +257,4 @@ Use "Clear History" to wipe conversation, or "Compress History" to summarize it 
 
 ## License
 
-MIT
+AGPL
