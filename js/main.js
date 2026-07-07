@@ -166,6 +166,21 @@
   }
 
   // ============================================================
+  // SHOWCASE USERS
+  // ============================================================
+
+  function makeShowcaseUserCard(item) {
+    var div = document.createElement('div');
+    div.className = 'showcase-user-card';
+    makeObservedCard(div);
+    div.innerHTML =
+      '<span class="suc-icon">' + item.icon + '</span>' +
+      '<h4>' + escapeHTML(item.title) + '</h4>' +
+      '<p>' + escapeHTML(item.desc) + '</p>';
+    return div;
+  }
+
+  // ============================================================
   // RENDER DYNAMIC SECTIONS
   // ============================================================
 
@@ -187,6 +202,16 @@
       var ifeatures = I18N[currentLang].island.features;
       for (var j = 0; j < ifeatures.length; j++) {
         iList.appendChild(makeIslandFeatureItem(ifeatures[j], j));
+      }
+    }
+
+    // Showcase users
+    var sUsers = document.getElementById('showcaseUsers');
+    if (sUsers) {
+      sUsers.innerHTML = '';
+      var users = I18N[currentLang].showcase.users;
+      for (var k = 0; k < users.length; k++) {
+        sUsers.appendChild(makeShowcaseUserCard(users[k]));
       }
     }
 
@@ -315,7 +340,7 @@
         { threshold: 0.15 }
       );
 
-      var cards = document.querySelectorAll('.feature-card, .download-card, .island-feature-item');
+      var cards = document.querySelectorAll('.feature-card, .download-card, .island-feature-item, .showcase-user-card');
       cards.forEach(function (el) {
         observer.observe(el);
       });
@@ -328,8 +353,8 @@
 
   var DOWNLOAD_URLS = {
     'Linux': 'https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0.deb',
-    'macOS': '',
-    'Windows': ''
+    'macOS': 'https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0-arm64.dmg',
+    'Windows': 'https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0-setup.exe'
   };
 
   function bindDownloadButtons() {

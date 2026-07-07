@@ -69,7 +69,14 @@ const I18N = {
       paneEditor: 'app.ts — nvim',
       paneTerminal: '终端 — zsh',
       termLine: 'npm run build',
-      termBuilt: '✓ 构建完成，耗时 2.4s'
+      termBuilt: '✓ 构建完成，耗时 2.4s',
+      users: [
+        { icon: '💻', title: '程序员 / 开发者', desc: '多项目并行开发，终端调试代码、文件面板管理资源、浏览器实时预览——三面板协作，告别频繁切换窗口。' },
+        { icon: '🖥️', title: '运维人员', desc: '同时监控多台服务器，终端并行执行命令，AI 智能体辅助排查故障，多会话管理让复杂运维井然有序。' },
+        { icon: '📚', title: '教师', desc: '教学演示时，左侧代码终端、右侧课件浏览器，学生实验环境统一管理，课堂效率倍增。' },
+        { icon: '📋', title: '系统录入文员', desc: '批量数据录入时，一边查看源文件、一边操作录入系统，AI 辅助自动化重复操作，减少手动输入错误。' },
+        { icon: '📊', title: '会计 / 出纳', desc: '财务软件与 Excel 同步操作，AI 智能体帮你写数据处理脚本，无需编程基础，批量处理凭证和报表。' }
+      ]
     },
     download: {
       heading: '获取 Nexus',
@@ -272,7 +279,14 @@ const I18N = {
       paneEditor: 'app.ts — nvim',
       paneTerminal: 'Terminal — zsh',
       termLine: 'npm run build',
-      termBuilt: '✓ built in 2.4s'
+      termBuilt: '✓ built in 2.4s',
+      users: [
+        { icon: '💻', title: 'Developer', desc: 'Work on multiple projects simultaneously — debug code in terminal, manage files, preview in browser — all in one unified workspace.' },
+        { icon: '🖥️', title: 'DevOps Engineer', desc: 'Monitor multiple servers at once, run commands in parallel terminals, let AI assist with troubleshooting. Multi-session management keeps ops organized.' },
+        { icon: '📚', title: 'Teacher', desc: 'Code terminal on the left, course materials on the right. Manage student lab environments all in one place.' },
+        { icon: '📋', title: 'Data Entry Clerk', desc: 'View source files while operating the entry system side by side. AI assists with automating repetitive tasks and reducing manual errors.' },
+        { icon: '📊', title: 'Accountant', desc: 'Operate financial software and Excel simultaneously. AI writes data processing scripts for you — no coding needed, batch process vouchers and reports.' }
+      ]
     },
     download: {
       heading: 'Get Nexus',
@@ -475,7 +489,14 @@ const I18N = {
       paneEditor: 'app.ts — nvim',
       paneTerminal: 'Terminal — zsh',
       termLine: 'npm run build',
-      termBuilt: '✓ compilé en 2,4s'
+      termBuilt: '✓ compilé en 2,4s',
+      users: [
+        { icon: '💻', title: 'Développeur', desc: 'Développez plusieurs projets en parallèle — déboguez dans le terminal, gérez les fichiers, prévisualisez dans le navigateur, le tout dans un espace unifié.' },
+        { icon: '🖥️', title: 'Ingénieur DevOps', desc: 'Surveillez plusieurs serveurs simultanément, exécutez des commandes en parallèle. L\'IA aide au dépannage, la gestion multi-sessions organise les opérations.' },
+        { icon: '📚', title: 'Enseignant', desc: 'Terminal de code à gauche, supports de cours à droite. Gérez les environnements de laboratoire des étudiants en un seul endroit.' },
+        { icon: '📋', title: 'Opérateur de saisie', desc: 'Consultez les fichiers sources tout en opérant le système de saisie côte à côte. L\'IA automatise les tâches répétitives et réduit les erreurs.' },
+        { icon: '📊', title: 'Comptable', desc: 'Utilisez le logiciel financier et Excel simultanément. L\'IA écrit des scripts de traitement — pas besoin de coder, traitez lots de pièces et rapports.' }
+      ]
     },
     download: {
       heading: 'Obtenez Nexus',
@@ -678,7 +699,14 @@ const I18N = {
       paneEditor: 'app.ts — nvim',
       paneTerminal: 'Terminal — zsh',
       termLine: 'npm run build',
-      termBuilt: '✓ compilado en 2,4s'
+      termBuilt: '✓ compilado en 2,4s',
+      users: [
+        { icon: '💻', title: 'Desarrollador', desc: 'Desarrolle múltiples proyectos en paralelo — depure en la terminal, gestione archivos, previsualice en el navegador, todo en un espacio unificado.' },
+        { icon: '🖥️', title: 'Ingeniero DevOps', desc: 'Monitoree varios servidores a la vez, ejecute comandos en terminales paralelas. La IA asiste en la resolución de problemas, la gestión multi-sesión mantiene todo organizado.' },
+        { icon: '📚', title: 'Profesor', desc: 'Terminal de código a la izquierda, materiales del curso a la derecha. Gestione los entornos de laboratorio de los estudiantes en un solo lugar.' },
+        { icon: '📋', title: 'Operador de datos', desc: 'Consulte archivos fuente mientras opera el sistema de entrada lado a lado. La IA automatiza tareas repetitivas y reduce errores manuales.' },
+        { icon: '📊', title: 'Contador', desc: 'Use el software financiero y Excel simultáneamente. La IA escribe scripts de procesamiento — sin necesidad de programar, procese comprobantes e informes en lote.' }
+      ]
     },
     download: {
       heading: 'Obtenga Nexus',

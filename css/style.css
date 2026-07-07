@@ -1053,6 +1053,52 @@ section {
   animation: blink 1s step-end infinite;
 }
 
+/* Showcase users */
+.showcase-users {
+  max-width: var(--max-width);
+  margin: 48px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.showcase-user-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+
+.showcase-user-card:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.showcase-user-card .suc-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.showcase-user-card h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.showcase-user-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
 /* --- Download --- */
 .download-grid {
   display: grid;
@@ -1312,6 +1358,7 @@ footer {
   .hero-actions { justify-content: center; }
   .hero-terminal { width: 100%; max-width: 440px; }
   .showcase-mockup { flex-direction: column; }
+  .showcase-users { grid-template-columns: repeat(3, 1fr); }
   .mockup-sidebar { width: 100%; flex-direction: row; padding: 12px 16px; gap: 16px; }
   .mockup-session-list { flex-direction: row; }
   .island-showcase { flex-direction: column; }
@@ -1323,6 +1370,7 @@ footer {
   .panels-grid { grid-template-columns: 1fr; }
   .panels-grid .panel-card:last-child { grid-column: span 1; max-width: 100%; }
   .download-grid { grid-template-columns: 1fr; }
+  .showcase-users { grid-template-columns: repeat(2, 1fr); }
   #hero { padding-top: calc(var(--nav-height) + 40px); }
   .nav-links { gap: 16px; }
   .nav-links a { font-size: 13px; }
@@ -1342,6 +1390,7 @@ footer {
   .nav-links > a:not(.nav-gh) { display: none; }
   .hero-actions { flex-direction: column; }
   .btn-primary, .btn-secondary { justify-content: center; }
+  .showcase-users { grid-template-columns: 1fr; }
 }
 
 /* ================================================================
