@@ -9,3 +9,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   </React.StrictMode>
 )
+
+// macOS: 给 body 添加平台 class，供 CSS 为原生 traffic lights 预留空间
+if (window.electronAPI?.platform?.isMac) {
+  document.body.classList.add('platform-mac')
+}

@@ -229,40 +229,42 @@ export function Header() {
           </svg>
         </button>
 
-        {/* 窗口控制按钮组 */}
-        <div className="window-controls">
-          <button className="window-control-btn" onClick={() => {
-            window.electronAPI?.minimizeWindow?.()
-          }} title={t('header.minimize')}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 13H5v-2h14v2z"/>
-            </svg>
-          </button>
-          <button className="window-control-btn" onClick={() => {
-            if (isMaximized) {
-              window.electronAPI?.unmaximizeWindow?.()
-            } else {
-              window.electronAPI?.maximizeWindow?.()
-            }
-          }} title={isMaximized ? t('header.restore') : t('header.maximize')}>
-            {isMaximized ? (
-              // 还原图标
+        {/* 窗口控制按钮组 — macOS 使用原生 traffic lights，不显示 */}
+        {!window.electronAPI?.platform?.isMac && (
+          <div className="window-controls">
+            <button className="window-control-btn" onClick={() => {
+              window.electronAPI?.minimizeWindow?.()
+            }} title={t('header.minimize')}>
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 8h14v14H4V8zm2 2v10h10V10H6zm12-6v10h-2V6H8V4h10a2 2 0 0 1 2 2z"/>
+                <path d="M19 13H5v-2h14v2z"/>
               </svg>
-            ) : (
-              // 最大化图标
+            </button>
+            <button className="window-control-btn" onClick={() => {
+              if (isMaximized) {
+                window.electronAPI?.unmaximizeWindow?.()
+              } else {
+                window.electronAPI?.maximizeWindow?.()
+              }
+            }} title={isMaximized ? t('header.restore') : t('header.maximize')}>
+              {isMaximized ? (
+                // 还原图标
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4 8h14v14H4V8zm2 2v10h10V10H6zm12-6v10h-2V6H8V4h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              ) : (
+                // 最大化图标
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 4H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H6V6h12v12z"/>
+                </svg>
+              )}
+            </button>
+            <button className="window-control-btn close-btn" onClick={handleCloseWindow} title={t('header.closeWindow')}>
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 4H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H6V6h12v12z"/>
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
               </svg>
-            )}
-          </button>
-          <button className="window-control-btn close-btn" onClick={handleCloseWindow} title={t('header.closeWindow')}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   )

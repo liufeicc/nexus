@@ -43,8 +43,11 @@ export class WindowManager {
       minWidth: 800,
       minHeight: 600,
       title: 'Nexus Workbench',
-      frame: false, // 隐藏系统标题栏，使用自定义标题栏
-      titleBarStyle: 'hidden',
+      // macOS: 保留原生 traffic lights（红绿黄按钮），隐藏标题栏
+      // Windows/Linux: 完全无边框，使用自定义标题栏
+      ...(process.platform === 'darwin'
+        ? { titleBarStyle: 'hidden' as const }
+        : { frame: false }),
       backgroundColor: '#f5f5f5',
       icon, // 窗口图标（影响任务栏和 Alt+Tab 显示）
       webPreferences: {

@@ -581,6 +581,11 @@ body {
 /* ==================== 暗色主题图标适配 ==================== */
 /* 深蓝和森林主题背景很暗，侧边栏箭头和加号图标需要白色才能看清 */
 
+/* macOS 红绿灯区域预留 */
+body.platform-mac .app-header {
+  padding-left: 78px;
+}
+
 /* 收起/展开侧边栏箭头 */
 [data-theme="deepblue"] .sidebar-toggle-btn,
 [data-theme="green"] .sidebar-toggle-btn {
