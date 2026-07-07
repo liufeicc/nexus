@@ -47,6 +47,8 @@ Download the latest version for your platform:
 | Windows | [Nexus-1.0.0-setup.exe](https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0-setup.exe) | 112 MB |
 | Linux (Debian/Ubuntu) | [Nexus-1.0.0.deb](https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0.deb) | 98 MB |
 | Linux (Portable) | [Nexus-1.0.0.AppImage](https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0.AppImage) | 120 MB |
+| macOS (Intel) | [Nexus-1.0.0.dmg](https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0.dmg) | 125 MB |
+| macOS (Apple Silicon) | [Nexus-1.0.0-arm64.dmg](https://github.com/liufeicc/nexus/releases/download/v1.0.0/Nexus-1.0.0-arm64.dmg) | 121 MB |
 
 ### Quick Install
 
