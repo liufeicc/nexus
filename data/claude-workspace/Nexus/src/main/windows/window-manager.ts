@@ -43,7 +43,7 @@ export class WindowManager {
       minWidth: 800,
       minHeight: 600,
       title: 'Nexus Workbench',
-      // macOS: 保留原生 traffic lights，隐藏标题栏
+      // macOS: 保留原生 traffic lights（红绿黄按钮），隐藏标题栏
       // Windows/Linux: 完全无边框，使用自定义标题栏
       ...(process.platform === 'darwin'
         ? { titleBarStyle: 'hidden' as const }
