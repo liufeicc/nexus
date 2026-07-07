@@ -1,0 +1,14 @@
+/**
+ * 灵动岛样式入口
+ * 各模块样式已拆分为独立文件
+ */
+
+@import './island-fonts.css';
+@import './island-core.css';
+@import './island-container.css';
+@import './island-indicator.css';
+@import './island-content.css';
+@import './island-header.css';
+@import './island-agent.css';
+@import './island-attachments.css';
+@import './island-extras.css';

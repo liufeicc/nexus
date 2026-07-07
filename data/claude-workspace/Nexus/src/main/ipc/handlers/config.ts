@@ -10,6 +10,20 @@ import { AgentConfig } from '../../../core/types/agent'
 import { invalidateConfigCache } from '../../services/agent-service'
 import { logger } from '../../utils/logger'
 import { resolveContextLength } from '../../agent/model-metadata'
+import { DynamicIslandManager } from '../../windows/dynamic-island-manager'
+import { ImapFlow } from 'imapflow'
+import nodemailer from 'nodemailer'
+import type { ModelCatalogItem } from '../../db/model-catalog.dao'
+
+/** 灵动岛管理器引用，用于发送语言变更通知 */
+let dynamicIslandManagerRef: DynamicIslandManager | null = null
+
+/**
+ * 设置灵动岛管理器引用（由主进程初始化时调用）
+ */
+export function setDynamicIslandManager(manager: DynamicIslandManager | null) {
+  dynamicIslandManagerRef = manager
+}
 
 /** 100x100 像素红色 PNG，用于视觉能力测试（宽高需 > 10） */
 const TEST_IMAGE_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAABFUlEQVR4nO3OUQkAIABEsetfWiv4Nx4IC7Cd7XvkByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIX4Q4gchfhDiByF+EOIHIReeLesrH9s1agAAAABJRU5ErkJggg=='
@@ -77,6 +91,7 @@ async function detectContextLength(
 
 export function registerConfigHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.CONFIG_SAVE, (_, key: string, value: any) => {
+    logger.info(`[ConfigHandler] 保存配置: key=${key}, value=${JSON.stringify(value)}`)
     DatabaseService.getInstance().getConfigDAO().save(key, value)
     // 配置修改后使缓存失效，下次 loadAgentConfig 从数据库重新读取
     invalidateConfigCache()
@@ -86,6 +101,14 @@ export function registerConfigHandlers(): void {
     const mainWindow = BrowserWindow.getAllWindows()[0]
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IPC_CHANNELS.CONFIG_CHANGED, { key })
+    }
+
+    // 语言变更时，也通知灵动岛窗口重新加载翻译
+    if (key === 'language' && dynamicIslandManagerRef) {
+      const islandWin = dynamicIslandManagerRef.getWindow()
+      if (islandWin && !islandWin.isDestroyed()) {
+        islandWin.webContents.send('language-changed', { lang: value })
+      }
     }
   })
 
@@ -152,6 +175,8 @@ export function registerConfigHandlers(): void {
       }
 
       // 测试视觉能力（发送包含测试图片的多模态消息）
+      // 测试图片是一张 100x100 的纯红色 PNG
+      // 问一个必须看到图片才能回答的问题，避免模型瞎编
       // 使用 streamChat 而非 chat，因为某些 provider（如 Anthropic）对大 max_tokens
       // 请求要求必须使用 streaming，否则会报 "Streaming is required" 错误
       let supportsVision = false
@@ -162,7 +187,7 @@ export function registerConfigHandlers(): void {
             {
               role: 'user',
               content: [
-                { type: 'text' as const, text: '请描述这张图片' },
+                { type: 'text' as const, text: '这张图片是什么颜色的？只回答一个颜色名称（中文或英文），不要加其他内容。' },
                 {
                   type: 'image' as const,
                   image: {
@@ -180,7 +205,10 @@ export function registerConfigHandlers(): void {
             onError: () => {},
           },
         )
-        supportsVision = visionContent.length > 0
+        // 测试图片是红色的，只有真正看到图片的模型才会回答"红色"/"red"/"Red"
+        // 不支持视觉的模型会瞎编一个颜色或说"无法看到图片"
+        const lower = visionContent.toLowerCase()
+        supportsVision = lower.includes('红') || lower.includes('red')
       } catch (e) {
         logger.debug('[ConfigHandler] 视觉能力测试失败:', e)
       }
@@ -219,6 +247,75 @@ export function registerConfigHandlers(): void {
         supportsVision: false,
         error: message,
       }
+    }
+  })
+
+  // 获取模型目录列表
+  ipcMain.handle(IPC_CHANNELS.MODEL_CATALOG_GET, async (): Promise<ModelCatalogItem[]> => {
+    return DatabaseService.getInstance().getModelCatalogDAO().getAll()
+  })
+
+  // 测试邮件连接：分别测试 IMAP 和 SMTP 连接
+  ipcMain.handle(IPC_CHANNELS.CONFIG_TEST_EMAIL, async (_, config: {
+    imapHost: string
+    imapPort: number
+    imapSecure: boolean
+    smtpHost: string
+    smtpPort: number
+    smtpSecure: boolean
+    email: string
+    appPassword: string
+  }) => {
+    // 1. 测试 IMAP 连接
+    try {
+      const imapClient = new ImapFlow({
+        host: config.imapHost,
+        port: config.imapPort,
+        secure: config.imapSecure,
+        auth: {
+          user: config.email,
+          pass: config.appPassword,
+        },
+        // 告诉 imapflow 发送 ID（RFC 2971）
+        clientInfo: { name: 'Nexus', version: '1.0' },
+      })
+      await imapClient.connect()
+      await imapClient.logout()
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      logger.error('[ConfigHandler] IMAP 连接失败:', message)
+      return {
+        success: false,
+        error: `IMAP 连接失败: ${message}`,
+      }
+    }
+
+    // 2. 测试 SMTP 连接
+    try {
+      logger.info('[ConfigHandler] 开始测试 SMTP 连接:', config.smtpHost)
+      const transporter = nodemailer.createTransport({
+        host: config.smtpHost,
+        port: config.smtpPort,
+        secure: config.smtpSecure,
+        auth: {
+          user: config.email,
+          pass: config.appPassword,
+        },
+      })
+      await transporter.verify()
+      logger.info('[ConfigHandler] SMTP 连接成功')
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      logger.error('[ConfigHandler] SMTP 连接失败:', message)
+      return {
+        success: false,
+        error: `SMTP 连接失败: ${message}`,
+      }
+    }
+
+    return {
+      success: true,
+      message: 'IMAP 和 SMTP 连接均成功',
     }
   })
 }

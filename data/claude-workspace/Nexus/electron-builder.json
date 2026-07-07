@@ -1,0 +1,79 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.nexus.app",
+  "productName": "Nexus",
+  "copyright": "Copyright © 2026 liufei",
+  "directories": {
+    "output": "dist-release",
+    "buildResources": "resources"
+  },
+  "files": [
+    "dist/**/*",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "resources",
+      "to": ".",
+      "filter": ["**/*", "!icons/**/*"]
+    }
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-${version}-setup.${ext}",
+    "icon": "1.png",
+    "signAndEditExecutable": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Nexus"
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "deb",
+        "arch": ["x64"]
+      },
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-${version}.${ext}",
+    "category": "Utility",
+    "icon": "resources/icons/linux",
+    "maintainer": "liufei",
+    "executableName": "nexus"
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "resources/icons/mac/icon.icns",
+    "category": "public.app-category.developer-tools"
+  },
+  "asar": true,
+  "asarUnpack": [
+    "node_modules/node-pty/prebuilds/**/*.node",
+    "node_modules/node-pty/prebuilds/**/spawn-helper",
+    "node_modules/node-pty/prebuilds/**/*.dll",
+    "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+  ],
+  "compression": "maximum",
+  "publish": {
+    "provider": "generic",
+    "url": "https://YOUR_UPDATE_SERVER/releases/",
+    "channel": "latest"
+  }
+}

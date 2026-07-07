@@ -1,0 +1,444 @@
+/**
+ * 灵动岛 Agent 模式专用样式
+ */
+
+.island-container[data-type='agent'] .island-accent-bar {
+  background: var(--c-purple);
+  box-shadow: 0 0 8px var(--c-purple);
+}
+.island-container[data-type='agent'] .island-pip {
+  background: var(--c-purple);
+  box-shadow: 0 0 6px var(--c-purple);
+}
+.island-container[data-type='agent'] .island-pulse-ring::before {
+  border-color: var(--c-purple);
+}
+.island-container[data-type='agent'] {
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+.island-sent-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.island-sent-msg {
+  padding: 8px 12px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--c-cyan);
+  display: flex;
+  gap: 4px;
+}
+
+.island-sent-msg-label {
+  font-size: 13px;
+  color: var(--c-cyan);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.island-sent-msg-text {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-height: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  cursor: pointer;
+  transition: max-height 0.2s ease;
+  flex: 1;
+  min-width: 0;
+}
+
+.island-sent-msg.expanded .island-sent-msg-text {
+  max-height: 500px;
+  -webkit-line-clamp: unset;
+  cursor: default;
+}
+
+/* 处理计时器：靠右对齐，不换行 */
+.island-elapsed-timer {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.7);
+  font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: flex-start;
+  line-height: 1.5;
+  padding-top: 1px;
+}
+
+.island-thinking {
+  padding: 8px 12px;
+  background: rgba(167, 139, 250, 0.08);
+  border-radius: 6px;
+  border-left: 2px solid var(--c-purple);
+}
+
+.island-thinking-label {
+  font-size: 14px;
+  color: var(--c-purple);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.island-thinking-text {
+  font-size: 14px;
+  color: #b0bec5;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  max-height: calc(1.6em * 3);
+  overflow: hidden;
+  overflow-y: auto;
+  word-break: break-word;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.island-thinking-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.island-thinking-text::-webkit-scrollbar-track {
+  background: rgba(167, 139, 250, 0.05);
+  border-radius: 2px;
+}
+
+.island-thinking-text::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.2);
+  border-radius: 2px;
+}
+
+.island-thinking-text::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.35);
+}
+
+.island-analyzing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(167, 139, 250, 0.06);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.island-analyzing-text {
+  color: #a78bfa;
+  font-weight: 500;
+  font-size: 13px;
+  animation: analyzing-pulse 2s ease-in-out infinite;
+}
+
+@keyframes analyzing-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.island-tool-call {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(56, 189, 248, 0.06);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.island-tool-icon {
+  font-size: 13px;
+}
+
+.island-tool-name {
+  color: #e2e8f0;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.island-tool-args {
+  color: #78909c;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  margin-left: auto;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.island-tool-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.island-tool-result.success {
+  background: rgba(52, 211, 153, 0.06);
+}
+
+.island-tool-result.error {
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.island-tool-result.success .island-tool-icon {
+  color: var(--c-green);
+}
+
+.island-tool-result.error .island-tool-icon {
+  color: var(--c-red);
+}
+
+.island-tool-output {
+  color: #78909c;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  margin-left: auto;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.island-agent-text {
+  color: #c8d6e5;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  min-height: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.island-agent-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.island-agent-text::-webkit-scrollbar-track {
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 2px;
+}
+
+.island-agent-text::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+}
+
+.island-agent-text::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.35);
+}
+
+.island-agent-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.island-stop-btn-inline {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 6px;
+  color: var(--c-red);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+}
+
+.island-stop-btn-inline:hover {
+  background: rgba(248, 113, 113, 0.3);
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.2);
+}
+
+.island-agent-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: var(--font-mono);
+  padding: 8px 12px;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  max-height: 210px;
+  min-height: 36px;
+  height: 36px;
+}
+
+.island-agent-input::placeholder {
+  color: #546e7a;
+}
+
+.island-agent-input:focus {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.1);
+}
+
+.island-agent-send-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  color: #67d8f9;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.island-agent-send-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.island-agent-send-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.35);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #a5e8ff;
+}
+
+.island-agent-send-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.island-container.collapsing {
+  max-height: 36px;
+  opacity: 0;
+}
+
+/* ==================== 历史对话样式 ==================== */
+
+/* 历史对话切换条 — 与 .island-sent-msg 一致结构，使用青色 */
+.island-history-toggle {
+  padding: 8px 12px;
+  background: rgba(56, 189, 248, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--c-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.island-history-toggle-label {
+  font-size: 13px;
+  color: var(--c-cyan);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.island-history-toggle-action {
+  font-size: 13px;
+  color: var(--c-cyan);
+  opacity: 0.7;
+  margin-left: auto;
+}
+
+/* 展开后的历史对话列表 */
+.island-history-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0 12px 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.island-history-expanded::-webkit-scrollbar {
+  width: 4px;
+}
+
+.island-history-expanded::-webkit-scrollbar-track {
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 2px;
+}
+
+.island-history-expanded::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+}
+
+.island-history-expanded::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.35);
+}
+
+.island-history-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.island-history-pair:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.island-history-question,
+.island-history-answer {
+  display: flex;
+  gap: 4px;
+}
+
+.island-role-label-q {
+  color: var(--c-cyan);
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  min-width: 6em;
+  text-align: right;
+}
+
+.island-role-label-a {
+  color: var(--c-purple);
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  min-width: 6em;
+  text-align: right;
+}
+
+.island-role-text {
+  font-size: 13px;
+  color: #c8d6e5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

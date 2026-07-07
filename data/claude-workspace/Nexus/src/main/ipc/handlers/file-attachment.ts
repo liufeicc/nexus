@@ -5,6 +5,7 @@
 import { ipcMain, dialog, app } from 'electron'
 import { IPC_CHANNELS } from '../../../core/constants/ipc-channels'
 import { expandTilde } from '../../utils/path'
+import { getNexusDirName } from '../../../core/utils/path-utils'
 import { getMimeType } from '../../../core/utils/mime-types'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -88,7 +89,7 @@ export function registerFileAttachmentHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.FILE_ATTACH, async (_, filePath: string) => {
     try {
       const fullPath = expandTilde(filePath)
-      const attachDir = path.join(app.getPath('home'), '.Nexus', 'env', 'attachments')
+      const attachDir = path.join(app.getPath('home'), getNexusDirName(), 'env', 'attachments')
 
       if (!fs.existsSync(attachDir)) {
         await fs.promises.mkdir(attachDir, { recursive: true })

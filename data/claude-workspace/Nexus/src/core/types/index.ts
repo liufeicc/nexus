@@ -6,7 +6,7 @@
 export type { Session, CreateSessionParams, UpdateSessionParams } from './session'
 
 // 面板相关
-export type { PanelSize, PanelPosition, PanelNode } from './pane'
+export type { PanelNode } from './pane'
 
 // 布局相关
 export type {

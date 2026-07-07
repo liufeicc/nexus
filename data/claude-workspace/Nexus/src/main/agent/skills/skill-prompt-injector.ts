@@ -135,12 +135,12 @@ export class SkillPromptInjector {
       grouped.get(cat)!.push(skill)
     }
 
-    let result = '## Skills (mandatory)\n'
-    result += 'Before replying, scan the skills below. If a skill matches or is even partially relevant\n'
-    result += 'to your task, you MUST load it with skill_view(name) and follow its instructions.\n'
-    result += 'Skills contain specialized knowledge — API endpoints, tool-specific commands,\n'
-    result += 'and proven workflows that outperform general-purpose approaches.\n\n'
-    result += '<available_skills>\n'
+    let result = '## 技能（必须使用）\n'
+    result += '在回复之前，先扫描以下技能。如果某个技能与你的任务相关或即使只是部分相关，\n'
+    result += '你必须使用 skill_view(name) 加载它并遵循其指令。\n'
+    result += '技能包含专业知识 — API 端点、特定工具命令、\n'
+    result += '以及优于通用方法的已验证工作流。\n\n'
+    result += '<可用技能>\n'
 
     for (const [category, catSkills] of grouped) {
       const catLabel = category || 'general'
@@ -150,8 +150,8 @@ export class SkillPromptInjector {
       }
     }
 
-    result += '</available_skills>\n\n'
-    result += 'Only proceed without loading a skill if genuinely none are relevant to the task.'
+    result += '</可用技能>\n\n'
+    result += '仅在确实没有任何技能与任务相关时，才不加载技能继续。'
 
     return result
   }

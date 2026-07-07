@@ -1,0 +1,532 @@
+/**
+ * 浏览器面板样式
+ */
+
+.browser-tab-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  padding: 0 8px;
+  height: 32px;
+  min-height: 32px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+}
+
+.browser-tab-bar::-webkit-scrollbar {
+  height: 0;
+}
+
+.browser-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  height: 26px;
+  min-width: 80px;
+  max-width: 160px;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  transition: background-color 0.1s;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.browser-tab:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.browser-tab.active {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  position: relative;
+  top: 1px;
+}
+
+.browser-tab-favicon,
+.browser-tab-favicon-placeholder {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.browser-tab-favicon-placeholder {
+  color: var(--text-muted);
+}
+
+.browser-tab-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.browser-tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.browser-tab-close svg {
+  width: 10px;
+  height: 10px;
+}
+
+.browser-tab:hover .browser-tab-close,
+.browser-tab.active .browser-tab-close {
+  opacity: 1;
+}
+
+.browser-tab-close:hover {
+  background-color: var(--border-color);
+}
+
+.browser-tab-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.browser-tab-new:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.browser-tab-new svg {
+  width: 14px;
+  height: 14px;
+}
+
+.browser-nav {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  padding: 0 6px;
+  gap: 2px;
+  background-color: var(--bg-toolbar);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.browser-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.browser-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.browser-nav-btn:hover:not(:disabled) {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.browser-nav-btn:active:not(:disabled) {
+  background-color: var(--active-bg);
+  transform: scale(0.92);
+}
+
+.browser-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.browser-nav-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.browser-nav.loading .browser-nav-btn-stop {
+  display: flex;
+}
+
+.browser-nav.loading .browser-nav-btn-refresh {
+  display: none;
+}
+
+.browser-nav-btn-stop {
+  display: none;
+}
+
+.browser-address-bar-wrapper {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  margin: 0 4px;
+  background-color: var(--bg-primary);
+  border-radius: 14px;
+}
+
+.browser-address-bar {
+  width: 100%;
+  height: 28px;
+  padding: 0 78px 0 30px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  background-color: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.browser-address-bar::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.browser-address-bar:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+.browser-address-bar-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.browser-address-bar:focus ~ .browser-address-bar-icon {
+  color: var(--accent-color);
+}
+
+.browser-address-bar-set-default {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.browser-address-bar-set-default:hover {
+  background-color: var(--hover-bg);
+  color: #fbbf24;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 默认网址按钮 active 状态 — 亮橙色 */
+.browser-address-bar-set-default.active {
+  color: #f59e0b;
+}
+
+.browser-address-bar-set-default svg {
+  width: 18px;
+  height: 18px;
+}
+
+.browser-address-bar-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 12px;
+}
+
+.browser-address-bar-clear:hover {
+  background-color: var(--hover-bg);
+}
+
+.browser-address-bar:not(:placeholder-shown) ~ .browser-address-bar-clear {
+  display: flex;
+}
+
+.browser-address-bar-add-bookmark {
+  position: absolute;
+  right: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.browser-address-bar-add-bookmark:hover {
+  background-color: var(--hover-bg);
+  color: #fbbf24;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* 书签按钮 active 状态 — 亮黄色 */
+.browser-address-bar-add-bookmark.active {
+  color: #fbbf24;
+}
+
+.browser-address-bar-add-bookmark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.browser-inline-suggestion {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 78px 0 30px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.browser-inline-suggestion-prefix {
+  color: transparent;
+  user-select: none;
+}
+
+.browser-inline-suggestion-ghost {
+  color: var(--text-muted);
+  font-style: italic;
+  user-select: none;
+}
+
+.browser-nav.loading .browser-address-bar {
+  border-color: var(--accent-color);
+}
+
+.browser-progress-bar-container {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.browser-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 60%, white));
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.browser-bookmark-dropdown {
+  position: absolute;
+  top: 70px;
+  left: 4px;
+  right: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  padding: 4px 0;
+}
+
+.browser-bookmark-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.browser-bookmark-dropdown::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
+.browser-bookmark-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.browser-bookmark-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: grab;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.browser-bookmark-item:active {
+  cursor: grabbing;
+}
+
+.browser-bookmark-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.browser-bookmark-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.browser-bookmark-item-title {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-bookmark-item-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+.browser-bookmark-item-delete {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.browser-bookmark-item:hover .browser-bookmark-item-delete {
+  opacity: 1;
+}
+
+.browser-bookmark-item-delete:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.browser-nav-btn.active {
+  background-color: var(--hover-bg);
+  color: var(--accent-color);
+}
+
+.browser-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
+  min-height: 0;
+}
+
+.browser-snapshot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.browser-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== Nexus 锁定样式 ==================== */
+
+/* 标签条锁定 */
+.browser-tab-bar.locked {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* 导航栏锁定 */
+.browser-nav.nexus-locked {
+  pointer-events: none;
+  opacity: 0.4;
+}

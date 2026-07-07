@@ -1,5 +1,5 @@
 /**
- * 核心智能体类 — 模仿 Hermes 的 AIAgent
+ * 核心智能体类
  *
  * 作用：管理对话流程、工具执行和响应处理。
  * 这是整个 Nexus 智能体系统的"大脑"。
@@ -21,14 +21,15 @@ import {
 import { MemoryManagerConfig } from '../../core/types/memory'
 import { LLMClient } from './llm-client'
 import { ToolRegistry } from './tool-registry'
-import { BuildSystemPromptOptions } from './prompt-builder'
+import { BuildSystemPromptOptions } from './prompt-builder/index'
 import { McpClient } from './mcp/mcp-client'
 import { AuxiliaryClient } from './auxiliary-client'
-import { AgentEventManager } from './agent-events'
-import { runAgentLoop, RunLoopDeps } from './agent-loop'
+import { AgentEventManager, createEvent } from './agent-events'
+import { runAgentLoop, RunLoopDeps, MutableAgentState, AgentRunResult } from './agent-loop'
 import { createLlmBridge } from './agent-llm-bridge'
 import { AgentSessionState } from './session-state'
 import { bindFileToolSession, bindSearchState } from './tools/file-tools'
+import { bindTerminalSession } from './tools/terminal-tool'
 import { MemoryManager } from './memory/memory-manager'
 import { DatabaseService } from '../services/database.service'
 import { AgentMessageDAO } from '../db/agent-message.dao'
@@ -68,23 +69,6 @@ function loadMemoryManagerConfig(): MemoryManagerConfig {
   }
 }
 
-// ==================== 智能体运行结果 ====================
-
-export interface AgentRunResult {
-  /** 最终响应文本 */
-  finalResponse: string | null
-  /** 完整消息历史 */
-  messages: AgentMessage[]
-  /** API 调用次数 */
-  apiCalls: number
-  /** 是否完成（正常结束而非中断） */
-  completed: boolean
-  /** 是否部分完成（截断或中断） */
-  partial: boolean
-  /** 错误信息（如有） */
-  error?: string
-}
-
 // ==================== 配置选项 ====================
 
 export interface AIAgentOptions extends AgentConfig {
@@ -119,7 +103,6 @@ export class AIAgent {
   // ── 状态 ──
   private messages: AgentMessage[] = []
   private iterationBudget: IterationBudget
-  private apiCallCount: number = 0
 
   // ── Token 跟踪 ──
   private lastPromptTokens: number = 0
@@ -169,13 +152,16 @@ export class AIAgent {
   // ── 后台压缩标记：下次 run() 时重新从 DB 加载历史 ──
   private needsReload: boolean = false
 
+  // ── 计划模式：开启后仅暴露只读工具 + write_plan ──
+  private _planMode: boolean = false
+
   constructor(options: AIAgentOptions) {
     this.config = {
       provider: options.provider,
       apiUrl: options.apiUrl,
       apiKey: options.apiKey,
       model: options.model,
-      maxIterations: options.maxIterations ?? 90,
+      maxIterations: options.maxIterations ?? 200,
       timeout: options.timeout ?? 600000,
       maxRetries: options.maxRetries ?? 3,
     }
@@ -208,6 +194,7 @@ export class AIAgent {
       this.toolRegistry,
       this.eventManager,
       () => this.getSkillBlock(),
+      () => this._planMode,
     )
 
     // 绑定会话状态到文件工具（避免全局变量导致跨会话污染）
@@ -216,6 +203,9 @@ export class AIAgent {
       () => this.sessionState.getSearchTrackerState(),
       (k, c) => this.sessionState.setSearchTrackerState(k, c),
     )
+
+    // 绑定会话 ID 到终端工具（确保危险命令审批按会话隔离）
+    bindTerminalSession(this.sessionId)
   }
 
   // ==================== 属性 ====================
@@ -238,6 +228,24 @@ export class AIAgent {
 
   get provider(): string {
     return this.config.provider
+  }
+
+  /**
+   * 设置计划模式开关
+   *
+   * 开启后 LLM 仅能使用只读工具和 write_plan 工具，
+   * 用于"探索→讨论→生成计划"的工作流程。
+   */
+  setPlanMode(enabled: boolean): void {
+    this._planMode = enabled
+    logger.info(`[AIAgent] 计划模式已${enabled ? '开启' : '关闭'}`)
+  }
+
+  /**
+   * 查询当前计划模式状态
+   */
+  getPlanMode(): boolean {
+    return this._planMode
   }
 
   // ==================== 工具注册 ====================
@@ -321,6 +329,7 @@ export class AIAgent {
       this.toolRegistry,
       this.eventManager,
       () => this.getSkillBlock(),
+      () => this._planMode,
     )
 
     // 注册记忆工具
@@ -416,6 +425,10 @@ export class AIAgent {
       const memConfig = loadMemoryManagerConfig()
       this.memoryManager = new MemoryManager(memConfig, this.nexusSessionId)
       logger.info('[AIAgent] reset() 后自动重建记忆系统')
+      // 必须调用初始化，否则 initialized === false，retrieveForTurn 静默返回空
+      await this.initializeMemory().catch(err =>
+        logger.warn('[AIAgent] 记忆系统重建初始化失败:', err)
+      )
     }
 
     // 检查后台压缩器是否已替换 DB 数据，如果是则重新加载历史
@@ -425,6 +438,20 @@ export class AIAgent {
       this.messages = []
       this.previousSummary = null
       this.topicId = ''
+
+      // 压缩后立即广播更新后的上下文使用百分比
+      const db = DatabaseService.getInstance()?.getAgentMessageDAO()
+      if (db) {
+        const compressedMessages = db.loadAllBySessionId(this.nexusSessionId)
+        const tokenCount = estimateMessageTokens(compressedMessages)
+        const contextLength = resolveContextLength(this.config.model, this.config.contextLength)
+        const pct = contextLength > 0 ? (tokenCount / contextLength) * 100 : 0
+        this.eventManager.emit(createEvent('state_change', {
+          state: 'idle',
+          contextUsagePercent: Math.round(pct * 10) / 10,
+        }))
+        logger.info(`[AIAgent] 压缩后上下文使用率: ${pct.toFixed(1)}% (${tokenCount}/${contextLength} tokens)`)
+      }
     }
 
     // 初始化或复用对话主题 ID
@@ -439,19 +466,25 @@ export class AIAgent {
 
     // 重置状态
     this.interruptRequested = false
-    this.apiCallCount = 0
     this.iterationBudget = new IterationBudget(this.config.maxIterations)
     // 创建新的工具执行中止控制器（上一次的已被 abort 过，不能复用）
     this.toolAbortController = new AbortController()
 
     // 构建运行循环所需的依赖
+    const agentState: MutableAgentState = {
+      messages: this.messages,
+      lastPromptTokens: this.lastPromptTokens,
+      previousSummary: this.previousSummary,
+      summaryFailureCooldownUntil: this.summaryFailureCooldownUntil,
+    }
+
     const deps: RunLoopDeps = {
       config: {
         model: this.config.model,
         provider: this.config.provider,
         apiUrl: this.config.apiUrl,
         apiKey: this.config.apiKey,
-        maxIterations: this.config.maxIterations ?? 90,
+        maxIterations: this.config.maxIterations ?? 200,
         timeout: this.config.timeout ?? 60000,
         maxRetries: this.config.maxRetries ?? 3,
         contextLength: this.config.contextLength,
@@ -461,33 +494,37 @@ export class AIAgent {
       toolRegistry: this.toolRegistry,
       eventManager: this.eventManager,
       auxClient: this.getAuxClient(),
-      getMessages: () => this.messages,
-      setMessages: (m) => { this.messages = m },
+      agentState,
       iterationBudget: this.iterationBudget,
       interruptRequested: () => this.interruptRequested,
       toolAbortSignal: this.toolAbortController.signal,
-      lastPromptTokens: this.lastPromptTokens,
-      setLastPromptTokens: (v) => { this.lastPromptTokens = v },
-      previousSummary: this.previousSummary,
-      setPreviousSummary: (v) => { this.previousSummary = v },
-      summaryFailureCooldownUntil: this.summaryFailureCooldownUntil,
-      setSummaryFailureCooldownUntil: (v) => { this.summaryFailureCooldownUntil = v },
       getSystemPrompt: () => this.llmBridge.getSystemPrompt(),
-      buildApiMessages: (sp) => this.llmBridge.buildApiMessages(sp),
       callLLMStream: (sp, msgs) => this.llmBridge.callLLMStream(sp, msgs),
       callLLMNonStream: (sp, msgs) => this.llmBridge.callLLMNonStream(sp, msgs),
       // 消息持久化回调
       saveMessage: (msg, turnIndex) => this.saveMessageToDb(msg, turnIndex),
       markTurnComplete: (turnIndex) => this.markTurnComplete(turnIndex),
+      getNextTurnIndex: () => {
+        const dao = this.getAgentMessageDAO()
+        return dao ? dao.getNextTurnIndex(this.topicId, this.nexusSessionId) : 0
+      },
       getMemoryContext: (q) => this.memoryManager?.retrieveForTurn(q) ?? '',
+      getPlanMode: () => this._planMode,
     }
 
     // 委托给运行循环
     const result = await runAgentLoop(userMessage, attachments, effectiveHistory, useStream, deps)
 
-    // 同步回写状态
-    this.messages = result.messages
-    this.apiCallCount = result.apiCalls
+    // 同步回写状态（深拷贝消息数组及嵌套对象，避免与运行循环内部共享引用导致数据污染）
+    this.messages = result.messages.map(msg => ({
+      ...msg,
+      content: Array.isArray(msg.content) ? msg.content.map(b => ({ ...b })) : msg.content,
+      tool_calls: msg.tool_calls ? msg.tool_calls.map(tc => ({ ...tc })) : undefined,
+      attachments: msg.attachments ? msg.attachments.map(a => ({ ...a })) : undefined,
+    }))
+    this.lastPromptTokens = agentState.lastPromptTokens
+    this.previousSummary = agentState.previousSummary
+    this.summaryFailureCooldownUntil = agentState.summaryFailureCooldownUntil
 
     // 检查上下文是否需要请求后台压缩
     this._signalBackgroundCompressionIfNeeded()
@@ -528,13 +565,34 @@ export class AIAgent {
   }
 
   /**
+   * 获取 Nexus 会话 ID
+   */
+  getNexusSessionId(): string | undefined {
+    return this.nexusSessionId || undefined
+  }
+
+  /**
+   * 获取主 Agent 配置
+   */
+  getConfig(): AgentConfig {
+    return { ...this.config }
+  }
+
+  /**
+   * 获取副模型配置
+   */
+  getSummaryModelConfig(): AgentConfig | undefined {
+    return this.summaryModelConfig ? { ...this.summaryModelConfig } : undefined
+  }
+
+  /**
    * 清除当前对话历史（数据库 + 内存）
    */
   clearHistory(): void {
-    // 清除数据库中的全部对话历史
+    // 清除数据库中的全部对话历史（按 session 隔离）
     const dao = this.getAgentMessageDAO()
     if (dao) {
-      dao.deleteAll()
+      dao.deleteAllBySessionId(this.nexusSessionId)
     }
 
     // 清除内存中的消息
@@ -612,7 +670,7 @@ export class AIAgent {
     if (!dao || !this.topicId) return
 
     try {
-      dao.markTurnComplete(this.topicId, turnIndex)
+      dao.markTurnComplete(this.topicId, turnIndex, this.nexusSessionId)
     } catch (err) {
       logger.warn('[AIAgent] 标记 turn 完整失败:', err)
     }
@@ -669,14 +727,13 @@ export class AIAgent {
           `[AIAgent] 上下文 ${currentTokens} tokens >= 50% 阈值 ${threshold}，` +
           `请求后台压缩 topic=${topicId}`
         )
-        this._backgroundCompressor.requestCompression(topicId)
+        this._backgroundCompressor.requestCompression(topicId, this.nexusSessionId)
       }
     }
   }
 
   reset(): void {
     this.messages = []
-    this.apiCallCount = 0
     this.lastPromptTokens = 0
     this.previousSummary = null
     this.summaryFailureCooldownUntil = 0
@@ -695,7 +752,7 @@ export class AIAgent {
   updateConfig(partial: Partial<AgentConfig>): void {
     this.config = { ...this.config, ...partial }
     this.llmClient.updateConfig(partial)
-    this.iterationBudget = new IterationBudget(this.config.maxIterations ?? 90)
+    this.iterationBudget = new IterationBudget(this.config.maxIterations ?? 200)
     if (partial.model) {
       this.sessionState.setCurrentModel(partial.model)
     }

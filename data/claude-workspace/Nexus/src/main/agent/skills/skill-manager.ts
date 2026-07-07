@@ -99,6 +99,15 @@ export class SkillManager {
         continue
       }
 
+      // 模式 1：检查分类根目录是否有 SKILL.md（扁平结构，如 docx/SKILL.md）
+      const rootSkillMd = path.join(catDir, 'SKILL.md')
+      if (fs.existsSync(rootSkillMd)) {
+        if (!filterFn || filterFn(rootSkillMd, cat)) {
+          results.push({ skillMdPath: rootSkillMd, category: cat })
+        }
+      }
+
+      // 模式 2：扫描子目录中的 SKILL.md（嵌套结构，如 category/skill-name/SKILL.md）
       const entries = fs.readdirSync(catDir, { withFileTypes: true })
       for (const entry of entries) {
         if (!entry.isDirectory() || entry.name.startsWith('.')) continue
@@ -134,6 +143,20 @@ export class SkillManager {
         continue
       }
 
+      // 模式 1：检查分类根目录是否有 SKILL.md（扁平结构，如 docx/SKILL.md）
+      const rootSkillMd = path.join(catDir, 'SKILL.md')
+      if (fs.existsSync(rootSkillMd)) {
+        try {
+          const content = fs.readFileSync(rootSkillMd, 'utf-8')
+          const parsed = this.parseSkillMd(content)
+          const meta = this.buildSkillMeta(parsed, cat)
+          results.push(meta)
+        } catch (error) {
+          logger.warn(`[SkillManager] 解析 SKILL.md 失败 ${rootSkillMd}: ${error}`)
+        }
+      }
+
+      // 模式 2：扫描子目录中的 SKILL.md（嵌套结构，如 category/skill-name/SKILL.md）
       const entries = fs.readdirSync(catDir, { withFileTypes: true })
       for (const entry of entries) {
         if (!entry.isDirectory()) continue
@@ -208,9 +231,20 @@ export class SkillManager {
   findSkillDir(name: string): { category: string; dirPath: string } | null {
     const categories = this.getSkillCategories()
     for (const cat of categories) {
-      const skillDir = path.join(this._skillsDir, cat, name)
-      if (fs.existsSync(skillDir) && fs.statSync(skillDir).isDirectory()) {
-        return { category: cat, dirPath: skillDir }
+      // 模式 1：嵌套结构 category/name/
+      const nestedDir = path.join(this._skillsDir, cat, name)
+      if (fs.existsSync(nestedDir) && fs.statSync(nestedDir).isDirectory()) {
+        return { category: cat, dirPath: nestedDir }
+      }
+      // 模式 2：扁平结构 category/（分类名即 skill 名）
+      if (cat === name) {
+        const flatDir = path.join(this._skillsDir, cat)
+        if (fs.existsSync(flatDir) && fs.statSync(flatDir).isDirectory()) {
+          const skillMdPath = path.join(flatDir, 'SKILL.md')
+          if (fs.existsSync(skillMdPath)) {
+            return { category: cat, dirPath: flatDir }
+          }
+        }
       }
     }
     return null
@@ -376,8 +410,8 @@ export class SkillManager {
     const linkedFiles = this.discoverLinkedFiles(dirPath)
 
     // 提取 tags 和 relatedSkills
-    const tags = parsed.frontmatter.tags ?? parsed.frontmatter.metadata?.hermes?.tags ?? []
-    const relatedSkills = parsed.frontmatter.metadata?.hermes?.related_skills ?? []
+    const tags = parsed.frontmatter.tags ?? parsed.frontmatter.metadata?.nexus?.tags ?? []
+    const relatedSkills = parsed.frontmatter.metadata?.nexus?.related_skills ?? []
 
     // 如果指定了 file_path，读取特定文件
     if (filePath) {

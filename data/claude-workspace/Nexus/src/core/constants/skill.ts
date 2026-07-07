@@ -5,10 +5,10 @@
  */
 import os from 'node:os'
 import path from 'node:path'
+import { getNexusDirName } from '../utils/path-utils'
 
 /** Skill 根目录：开发模式用 ~/.Nexus_dev/skills/，生产模式用 ~/.Nexus/skills/ */
-const NEXUS_DIR_NAME = process.env.NODE_ENV === 'development' ? '.Nexus_dev' : '.Nexus'
-export const SKILLS_DIR = path.join(os.homedir(), NEXUS_DIR_NAME, 'skills')
+export const SKILLS_DIR = path.join(os.homedir(), getNexusDirName(), 'skills')
 
 /** Skill 名称验证正则 */
 export const SKILL_NAME_REGEX = /^[a-z0-9][a-z0-9._-]*$/

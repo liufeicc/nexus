@@ -27,7 +27,11 @@ export const IPC_CHANNELS = {
   CONFIG_GET_ALL: 'config:get-all',
   CONFIG_DELETE: 'config:delete',
   CONFIG_TEST_MODEL: 'config:test-model',
+  CONFIG_TEST_EMAIL: 'config:test-email',
   CONFIG_CHANGED: 'config:changed', // 配置修改后主进程 → 渲染进程通知
+
+  // 模型目录
+  MODEL_CATALOG_GET: 'model-catalog:get',
 
   // PTY 管理
   PTY_CREATE: 'pty:create',
@@ -56,6 +60,7 @@ export const IPC_CHANNELS = {
   // 剪贴板
   CLIPBOARD_READ_TEXT: 'clipboard:read-text',
   CLIPBOARD_WRITE_TEXT: 'clipboard:write-text',
+  CLIPBOARD_READ_FILES: 'clipboard:read-files',
 
   // 文件系统
   FS_READ_DIR: 'fs:read-dir',
@@ -70,10 +75,13 @@ export const IPC_CHANNELS = {
   FS_FILE_CHANGED: 'fs:file-changed',
   FS_TRASH_ITEM: 'fs:trash-item',
   FS_READ_FILE_AS_BASE64: 'fs:read-file-as-base64',
+  FS_CONVERT_TO_PDF: 'fs:convert-to-pdf',
+  FS_CHECK_LIBREOFFICE: 'fs:check-libreoffice',
   FS_RENAME: 'fs:rename',
   FS_WRITE_FILE: 'fs:write-file',
   FS_CREATE_DIR: 'fs:create-dir',
   FS_CREATE_FILE: 'fs:create-file',
+  FS_OPEN_WITH_SYSTEM: 'fs:open-with-system',
 
   // 浏览器管理
   BROWSER_CREATE: 'browser:create',
@@ -92,6 +100,8 @@ export const IPC_CHANNELS = {
   BROWSER_CAN_GO_FORWARD: 'browser:can-go-forward',
   BROWSER_DESTROY: 'browser:destroy',
   BROWSER_CAPTURE_PAGE: 'browser:capture-page',
+  BROWSER_LOCK_TAB: 'browser:lock-tab',
+  BROWSER_UNLOCK_TAB: 'browser:unlock-tab',
   // 浏览器历史
   BROWSER_HISTORY_SAVE: 'browser:history:save',
   BROWSER_HISTORY_LIST: 'browser:history:list',
@@ -122,6 +132,8 @@ export const IPC_CHANNELS = {
   AGENT_SEND_MESSAGE: 'agent:send-message',
   AGENT_INTERRUPT: 'agent:interrupt',
   AGENT_GET_STATUS: 'agent:get-status',
+  AGENT_SET_PLAN_MODE: 'agent:set-plan-mode',    // 设置计划模式开关
+  AGENT_GET_PLAN_MODE: 'agent:get-plan-mode',    // 查询计划模式状态
 
   // 智能体 AI 事件（主进程 → 渲染进程）
   AGENT_STREAMING: 'agent:streaming',
@@ -131,6 +143,10 @@ export const IPC_CHANNELS = {
   AGENT_STATE_CHANGE: 'agent:state-change',
   AGENT_NEW_ITERATION: 'agent:new-iteration',
   AGENT_TOOL_CALLING_STARTED: 'agent:tool-calling-started',
+
+  // 计划更新事件（主进程 → 渲染进程）
+  AGENT_PLAN_UPDATE: 'agent:plan-update',
+  AGENT_PLAN_MODE_CHANGED: 'agent:plan-mode-changed',  // AI 自动切换计划模式时广播
 
   // 后台智能体活动事件（主进程 → 渲染进程）
   AGENT_BACKGROUND_ACTIVITY: 'agent:background-activity',
@@ -163,19 +179,47 @@ export const IPC_CHANNELS = {
   NEXUS_CONNECT: 'nexus:connect',          // 请求连接终端面板
   NEXUS_CONNECT_BROWSER: 'nexus:connect-browser',  // 请求连接浏览器面板
   NEXUS_CONNECT_FILE: 'nexus:connect-file',        // 请求连接文件面板
-  NEXUS_DISCONNECT: 'nexus:disconnect',    // 请求断开连接
+  NEXUS_DISCONNECT: 'nexus:disconnect',    // 请求断开所有连接
+  NEXUS_DISCONNECT_BROWSER: 'nexus:disconnect-browser',  // 仅断开浏览器轨连接
+  NEXUS_DISCONNECT_DATA: 'nexus:disconnect-data',  // 仅断开数据轨连接
   NEXUS_CONNECTION_STATE_CHANGED: 'nexus:connection-state-changed',  // 连接状态变化事件
 
   // 历史对话管理（渲染进程 ↔ 主进程）
   AGENT_CLEAR_HISTORY: 'agent:clear-history',  // 清除当前会话的对话历史
   AGENT_COMPRESS_HISTORY: 'agent:compress-history',  // 手动触发对话历史压缩
   AGENT_GET_CONTEXT_USAGE: 'agent:get-context-usage',  // 获取初始上下文使用率
+  AGENT_LOAD_HISTORY: 'agent:load-history',  // 加载对话历史（用于 UI 恢复）
+
+  // Skill 技能管理（渲染进程 ↔ 主进程）
+  SKILL_LIST: 'skill:list',             // 获取技能列表
+  SKILL_VIEW: 'skill:view',             // 获取单个技能完整内容
+  SKILL_MANAGE: 'skill:manage',          // 创建/编辑/删除技能
 
   // 输入历史管理（DynamicIsland 输入记录）
   INPUT_HISTORY_ADD: 'input-history:add',
   INPUT_HISTORY_LIST: 'input-history:list',
   INPUT_HISTORY_DELETE: 'input-history:delete',
   INPUT_HISTORY_CLEAR: 'input-history:clear',
+
+  // 记忆管理（渲染进程 ↔ 主进程）
+  MEMORY_LIST: 'memory:list',           // 获取记忆列表（entries + facts）
+  MEMORY_VIEW: 'memory:view',           // 获取单条记忆详情
+  MEMORY_DELETE: 'memory:delete',       // 删除记忆条目
+  MEMORY_SAVE_USER_PREF: 'memory:save-user-pref',   // 保存用户偏好
+  MEMORY_GET_USER_PREF: 'memory:get-user-pref',     // 获取用户偏好
+
+  // 自动更新（渲染进程 ↔ 主进程）
+  UPDATE_CHECK: 'update:check',          // 渲染进程 → 主进程：触发检查更新
+  UPDATE_DOWNLOAD: 'update:download',    // 渲染进程 → 主进程：开始下载更新
+  UPDATE_INSTALL: 'update:install',      // 渲染进程 → 主进程：安装并重启
+  UPDATE_STATE: 'update:state',          // 主进程 → 渲染进程：状态变更事件
+  UPDATE_ERROR: 'update:error',          // 主进程 → 渲染进程：错误通知
+
+  // 目录档案 NEXUS.md 管理（渲染进程 ↔ 主进程）
+  NEXUS_PROFILE_READ: 'nexus-profile:read',      // 读取指定目录的 NEXUS.md
+  NEXUS_PROFILE_WRITE: 'nexus-profile:write',    // 写入指定目录的 NEXUS.md
+  NEXUS_PROFILE_EXISTS: 'nexus-profile:exists',  // 检查是否存在
+  NEXUS_PROFILE_GENERATE: 'nexus-profile:generate', // 自动生成目录说明
 } as const
 
 export type IPCChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]

@@ -330,7 +330,7 @@ export function useFileAttachments(
 }
 
 /**
- * 检测输入框中的文件路径（类似 HERMES 的路径拖拽/粘贴检测）
+ * 检测输入框中的文件路径
  * 提取为独立函数供 useEffect 调用
  */
 async function handlePathDetection(

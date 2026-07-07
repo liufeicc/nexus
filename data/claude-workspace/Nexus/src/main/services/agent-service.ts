@@ -8,13 +8,18 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { AIAgent, AIAgentOptions } from '../agent/ai-agent'
 import { createBuiltTools } from '../agent/tools'
+import { TodoItem } from '../agent/tools/todo-store'
 import { BackgroundCompressor } from '../agent/background-compressor'
-import { AgentState, AgentConfig, AttachedFile } from '../../core/types/agent'
+import { MemoryExtractorAgent } from '../agent/memory-extractor'
+import { AgentState, AgentConfig, AttachedFile, AgentMessage } from '../../core/types/agent'
 import { IPC_CHANNELS } from '../../core/constants/ipc-channels'
 import { DatabaseService } from '../services/database.service'
 import { setApprovalCallback, setInteractiveMode, ApprovalAction } from '../agent/utils/approval'
 import { setClarifyCallback } from '../agent/tools/clarify-tool'
-import { configureWebSearch } from '../agent/tools/web-tools'
+import { configureEmail } from '../agent/tools/email-tools'
+import { createWritePlanTool } from '../agent/tools/write-plan-tool'
+import { createUpdatePlanTool } from '../agent/tools/update-plan-tool'
+import { createExitPlanModeTool, createEnterPlanModeTool } from '../agent/tools/plan-mode-tools'
 import { logger } from '../utils/logger'
 import { estimateMessageTokens } from '../agent/context-compressor'
 import { resolveContextLength } from '../agent/model-metadata'
@@ -31,14 +36,56 @@ const agentSessions = new Map<string, AIAgent>()
 const backgroundCompressors = new Map<string, BackgroundCompressor>()
 
 /**
- * 默认会话 ID（单会话向后兼容）
+ * 按 sessionId 隔离的计划模式状态（agent 可能尚未创建，需提前记录用户意图）
  */
-const DEFAULT_SESSION_ID = '__default__'
+const planModeStates = new Map<string, boolean>()
+
+/**
+ * 触发记忆提取（异步，不阻塞调用方）
+ *
+ * 在"清除历史对话"或"总结历史对话"时调用，
+ * 后台启动副模型分析对话历史，提取值得长期保存的记忆。
+ */
+function triggerMemoryExtraction(messages: AgentMessage[], sessionId: string): void {
+  if (messages.length < 4) {
+    return
+  }
+
+  const agent = agentSessions.get(sessionId)
+  if (!agent) {
+    logger.warn('[AIAgentManager] agent 实例不存在，跳过记忆提取')
+    return
+  }
+
+  const nexusSessionId = agent.getNexusSessionId()
+  if (!nexusSessionId) {
+    logger.warn('[AIAgentManager] nexusSessionId 为空，跳过记忆提取')
+    return
+  }
+
+  const parentConfig = agent.getConfig()
+  const summaryModelConfig = agent.getSummaryModelConfig()
+  logger.debug(`[AIAgentManager] 记忆提取配置: parent=${parentConfig?.model}, summary=${summaryModelConfig?.model}`)
+
+  const extractor = new MemoryExtractorAgent({
+    nexusSessionId,
+    parentConfig,
+    summaryModelConfig,
+  })
+
+  // Fire and forget，不阻塞调用方
+  extractor.extract(messages).then(() => {
+    logger.info('[AIAgentManager] 已触发记忆提取，sessionId=%s', sessionId)
+  }).catch(err => {
+    logger.error('[AIAgentManager] 记忆提取失败: sessionId=%s, error=%s', sessionId, err)
+  })
+  logger.info(`[AIAgentManager] 已触发记忆提取: ${messages.length} 条消息`)
+}
 
 /**
  * 手动触发后台压缩
  */
-export function compressConversationHistory(sessionId: string = DEFAULT_SESSION_ID): boolean {
+export function compressConversationHistory(sessionId: string): boolean {
   // 如果后台压缩器不存在，先创建 agent 会话
   if (!backgroundCompressors.has(sessionId)) {
     logger.info(`[AIAgentManager] 压缩器不存在，正在创建 agent 会话: ${sessionId}`)
@@ -54,8 +101,12 @@ export function compressConversationHistory(sessionId: string = DEFAULT_SESSION_
     logger.info('[AIAgentManager] 压缩已在进行中，跳过重复请求')
     return false
   }
-  compressor.requestCompression(sessionId)
-  logger.info(`[AIAgentManager] 手动触发压缩: sessionId=${sessionId}`)
+
+  // 获取该 session 下的 topicId
+  const agent = agentSessions.get(sessionId)
+  const topicId = agent?.getTopicId() || sessionId
+  compressor.requestCompression(topicId, sessionId)
+  logger.info(`[AIAgentManager] 手动触发压缩: sessionId=${sessionId}, topicId=${topicId}`)
   return true
 }
 
@@ -76,7 +127,17 @@ function broadcast(eventChannel: string, data: Record<string, unknown>): void {
 /**
  * 从数据库读取 agent 配置
  */
-function loadAgentConfig(): (AgentConfig & { summaryModelConfig?: AgentConfig }) | null {
+
+/** 配置缓存，避免每次调用都读数据库 */
+let cachedAgentConfig: (AgentConfig & { summaryModelConfig?: AgentConfig }) | null = null
+/** 语言缓存 */
+let cachedLanguage: 'zh' | 'en' = 'zh'
+
+export function loadAgentConfig(): (AgentConfig & { summaryModelConfig?: AgentConfig }) | null {
+  // 优先使用缓存
+  if (cachedAgentConfig !== null) {
+    return cachedAgentConfig
+  }
   try {
     const db = DatabaseService.getInstance()
     if (!db) return null
@@ -114,17 +175,27 @@ function loadAgentConfig(): (AgentConfig & { summaryModelConfig?: AgentConfig })
 
     setInteractiveMode(agentInteractive !== false)
 
-    const webSearch = configDAO.get('webSearch') as {
-      provider: string
-      apiUrl: string
-      apiKey: string
+    // 邮件工具配置
+    const emailConf = configDAO.get('emailConfig') as {
+      enabled: boolean
+      account: {
+        email: string
+        appPassword: string
+        imapHost: string
+        imapPort: number
+        imapSecure: boolean
+        smtpHost: string
+        smtpPort: number
+        smtpSecure: boolean
+        displayName?: string
+      }
     } | null
-    if (webSearch && webSearch.apiUrl && webSearch.apiKey) {
-      configureWebSearch(webSearch)
-      logger.info('[AIAgentManager] webSearch 工具已配置:', webSearch.provider)
+    if (emailConf && emailConf.enabled && emailConf.account) {
+      configureEmail(emailConf)
+      logger.info('[AIAgentManager] email 工具已配置:', emailConf.account.email)
     } else {
-      configureWebSearch(null)
-      logger.info('[AIAgentManager] webSearch 工具未配置或配置不完整')
+      configureEmail(null)
+      logger.info('[AIAgentManager] email 工具未配置或未启用')
     }
 
     // 构建辅助客户端配置：优先使用副模型配置，未配置时回退到主模型
@@ -143,22 +214,52 @@ function loadAgentConfig(): (AgentConfig & { summaryModelConfig?: AgentConfig })
       }
       : undefined
 
-    return {
+    // 缓存结果
+    const result: AgentConfig & { summaryModelConfig?: AgentConfig } = {
       provider: agentConfig.provider,
       apiUrl: agentConfig.apiUrl,
       apiKey: agentConfig.apiKey,
       model: agentConfig.model,
-      maxIterations: agentConfig.maxIterations ?? 90,
+      maxIterations: agentConfig.maxIterations ?? 200,
       timeout: agentConfig.timeout ?? 600000,
       maxRetries: agentConfig.maxRetries ?? 3,
       contextLength: agentConfig.contextLength || undefined,
       accessModes: agentConfig.accessModes,
       summaryModelConfig: auxAgentConfig,
     }
+    cachedAgentConfig = result
+
+    // 读取语言配置
+    try {
+      const savedLang = configDAO.get('language') as string | null
+      if (savedLang && (savedLang === 'zh' || savedLang === 'en')) {
+        cachedLanguage = savedLang
+      }
+    } catch {
+      // 语言读取失败不影响主配置
+    }
+
+    return result
   } catch (err) {
     logger.error('[AIAgentManager] 读取配置失败:', err)
     return null
   }
+}
+
+/**
+ * 获取当前界面语言对应的显示名称，用于 prompt 注入
+ */
+export function getAppLanguageName(): string {
+  const map: Record<string, string> = { zh: '中文', en: 'English', fr: 'Français', es: 'Español' }
+  return map[cachedLanguage] || '中文'
+}
+
+/**
+ * 使配置缓存失效，下次 loadAgentConfig 会从数据库重新读取
+ */
+export function invalidateConfigCache(): void {
+  cachedAgentConfig = null
+  cachedLanguage = 'zh'
 }
 
 /**
@@ -174,7 +275,12 @@ export function broadcastStartupContextUsage(): void {
     return
   }
 
-  const messages = DatabaseService.getInstance().getAgentMessageDAO().loadAllMessages()
+  const db = DatabaseService.getInstance()
+  if (!db) {
+    logger.warn('[AIAgentManager] 数据库服务未就绪，跳过初始上下文使用率计算')
+    return
+  }
+  const messages = db.getAgentMessageDAO().loadAllMessages()
   if (messages.length === 0) {
     logger.info('[AIAgentManager] 无历史消息，初始上下文使用率为 0%')
     return
@@ -203,7 +309,9 @@ export function getAgentContextUsage(): { contextUsagePercent: number } {
     return { contextUsagePercent: 0 }
   }
 
-  const messages = DatabaseService.getInstance().getAgentMessageDAO().loadAllMessages()
+  const db = DatabaseService.getInstance()
+  if (!db) return { contextUsagePercent: 0 }
+  const messages = db.getAgentMessageDAO().loadAllMessages()
   if (messages.length === 0) {
     return { contextUsagePercent: 0 }
   }
@@ -213,6 +321,64 @@ export function getAgentContextUsage(): { contextUsagePercent: number } {
   const pct = contextLength > 0 ? (tokenCount / contextLength) * 100 : 0
 
   return { contextUsagePercent: Math.round(pct * 10) / 10 }
+}
+
+/**
+ * 加载指定会话的对话历史（用于 UI 恢复）
+ *
+ * 从数据库读取消息，按 turn_index 配对 user 和 assistant 消息，
+ * 返回 { question, answer, timestamp }[] 格式。
+ * 忽略 system、tool 消息和中间过程。
+ */
+export function loadConversationHistory(sessionId: string): Array<{
+  question: string
+  answer: string
+  timestamp: number
+}> {
+  const db = DatabaseService.getInstance()
+  if (!db) {
+    logger.warn('[AIAgentManager] 数据库服务未就绪，无法加载对话历史')
+    return []
+  }
+  const dao = db.getAgentMessageDAO()
+  const allMessages = dao.loadAllBySessionId(sessionId)
+
+  const turns: Array<{ question: string; answer: string; timestamp: number }> = []
+  let pendingUser = null as { content: string; timestamp: number } | null
+
+  for (const msg of allMessages) {
+    if (msg.role === 'user') {
+      // 提取用户消息文本
+      const text = typeof msg.content === 'string'
+        ? msg.content
+        : msg.content && Array.isArray(msg.content)
+          ? msg.content.map((b: any) => b.type === 'text' ? b.text : '').join('')
+          : ''
+      if (text.trim()) {
+        pendingUser = { content: text.trim(), timestamp: msg.timestamp || Date.now() }
+      }
+    } else if (msg.role === 'assistant' && pendingUser && !msg.tool_calls) {
+      // 非工具调用的 assistant 消息，配对为完整一轮
+      const text = typeof msg.content === 'string'
+        ? msg.content
+        : msg.content && Array.isArray(msg.content)
+          ? msg.content.map((b: any) => b.type === 'text' ? b.text : '').join('')
+          : ''
+      if (text.trim()) {
+        turns.push({
+          question: pendingUser.content,
+          answer: text.trim(),
+          timestamp: pendingUser.timestamp,
+        })
+        pendingUser = null
+      }
+    } else if (msg.role === 'tool' || (msg.role === 'assistant' && msg.tool_calls)) {
+      // tool 消息或有工具调用的 assistant 消息，不配对
+      // 但如果有 pendingUser，保留等待下一个 assistant 回复
+    }
+  }
+
+  return turns
 }
 
 /**
@@ -233,6 +399,7 @@ function setupEventBridge(agent: AIAgent): void {
           toolName: event.data.toolName as string,
           toolArgs: event.data.toolArgs as Record<string, unknown> | undefined,
         })
+        logger.info(`[AgentService] tool_start: ${event.data.toolName} args=${JSON.stringify(event.data.toolArgs).slice(0, 200)}`)
         break
       case 'tool_result': {
         let fullOutput = ''
@@ -242,11 +409,14 @@ function setupEventBridge(agent: AIAgent): void {
           const c = toolMsg.content
           fullOutput = typeof c === 'string' ? (c ?? '') : ''
         }
+        // 透传工具附加数据（如 write_plan 的计划文档内容）
+        const toolData = event.data.data
         broadcast(IPC_CHANNELS.AGENT_TOOL_RESULT, {
           toolCallId: event.data.toolCallId as string,
           toolName: event.data.toolName as string,
           success: event.data.success as boolean,
           output: fullOutput,
+          ...(toolData != null ? { data: toolData } : {}),
         })
         break
       }
@@ -260,6 +430,12 @@ function setupEventBridge(agent: AIAgent): void {
         break
       case 'new_iteration':
         broadcast(IPC_CHANNELS.AGENT_NEW_ITERATION, {})
+        break
+      case 'tool_calling_started':
+        broadcast(IPC_CHANNELS.AGENT_TOOL_CALLING_STARTED, {
+          toolCallId: event.data.toolCallId as string,
+          toolName: event.data.toolName as string,
+        })
         break
     }
   })
@@ -276,12 +452,16 @@ function createAgentSession(sessionId: string): AIAgent | null {
   }
 
   // 获取当前激活的 Nexus 会话 ID（用于记忆隔离）
-  const activeSession = DatabaseService.getInstance().getSessionDAO().getActive()
+  const db = DatabaseService.getInstance()
+  const activeSession = db?.getSessionDAO().getActive()
   const nexusSessionId = activeSession?.id
 
   const agentOptions: AIAgentOptions = {
     ...config,
     nexusSessionId: nexusSessionId || undefined,
+    promptBuilderOptions: {
+      language: cachedLanguage,
+    },
   }
 
   const agent = new AIAgent(agentOptions)
@@ -294,7 +474,33 @@ function createAgentSession(sessionId: string): AIAgent | null {
   // 初始化 Task 系统
   agent.initTasks()
 
+  // 注册计划模式工具（write_plan + update_plan）
+  agent.registerTool(createWritePlanTool(() => agent.getPlanMode()))
+  agent.registerTool(createUpdatePlanTool(() => agent.getPlanMode()))
+
+  // 注册计划模式切换工具（AI 自动进入/退出计划模式）
+  const planModeToggle = (enabled: boolean) => {
+    agent.setPlanMode(enabled)
+    planModeStates.set(sessionId, enabled)
+    broadcast(IPC_CHANNELS.AGENT_PLAN_MODE_CHANGED, { planMode: enabled })
+    logger.info(`[AIAgentManager] AI 自动${enabled ? '进入' : '退出'}计划模式: sessionId=${sessionId}`)
+  }
+  agent.registerTool(createExitPlanModeTool(() => agent.getPlanMode(), planModeToggle))
+  agent.registerTool(createEnterPlanModeTool(() => agent.getPlanMode(), planModeToggle))
+
+  // 应用预设的计划模式状态（用户可能在 agent 创建前就切换了计划模式）
+  const presetPlanMode = planModeStates.get(sessionId) ?? false
+  if (presetPlanMode) {
+    agent.setPlanMode(true)
+    logger.info(`[AIAgentManager] 应用预设计划模式: sessionId=${sessionId}`)
+  }
+
   setupEventBridge(agent)
+
+  // 注册 TodoStore 变更回调，计划变更时广播到渲染进程
+  agent.sessionState.todoStore.setOnChange((items: TodoItem[]) => {
+    broadcast(IPC_CHANNELS.AGENT_PLAN_UPDATE, { todos: items })
+  })
 
   // 创建并启动后台压缩器
   const compressor = new BackgroundCompressor({
@@ -302,6 +508,7 @@ function createAgentSession(sessionId: string): AIAgent | null {
     contextLength: config.contextLength,
     summaryModelConfig: config.summaryModelConfig,
     pollIntervalMs: 5000,
+    nexusSessionId: nexusSessionId,
   })
   compressor.setReloadCallback(() => agent.setNeedsReload(true))
   compressor.setActivityCallback((data) => {
@@ -327,9 +534,10 @@ function createAgentSession(sessionId: string): AIAgent | null {
 /**
  * 获取或创建 AIAgent 实例（按 sessionId 隔离）
  */
-export function getOrCreateAIAgent(sessionId: string = DEFAULT_SESSION_ID): AIAgent | null {
+export function getOrCreateAIAgent(sessionId: string): AIAgent | null {
   // 检查是否存在活跃的 Nexus 会话，没有则不启动智能体
-  const activeSession = DatabaseService.getInstance().getSessionDAO().getActive()
+  const db = DatabaseService.getInstance()
+  const activeSession = db?.getSessionDAO().getActive()
   if (!activeSession) {
     logger.warn('[AIAgentManager] 无活跃会话，智能体未启动')
     return null
@@ -348,7 +556,7 @@ export function getOrCreateAIAgent(sessionId: string = DEFAULT_SESSION_ID): AIAg
 export async function sendMessageToAIAgent(
   userMessage: string,
   attachments: AttachedFile[] | undefined,
-  sessionId: string = DEFAULT_SESSION_ID,
+  sessionId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const agent = getOrCreateAIAgent(sessionId)
@@ -359,13 +567,11 @@ export async function sendMessageToAIAgent(
       return { success: false, error: 'Agent is currently running' }
     }
 
-    // 根据 accessModes 决定调用方式：优先 invoke，不支持则降级 stream
+    // 根据 accessModes 决定调用方式：优先 stream，不支持则降级 invoke
     const config = loadAgentConfig()
     const accessModes = config?.accessModes ?? []
-    const hasInvoke = accessModes.includes('invoke')
     const hasStream = accessModes.includes('stream')
-    // 优先 invoke；仅 invoke 时 useStream=false；仅 stream 或两者都有时按 invoke 优先
-    const useStream = !hasInvoke && hasStream
+    const useStream = hasStream
 
     agent.run(userMessage, attachments, agent.getMessages(), useStream).then((result) => {
       // 运行结束后广播最终响应和错误信息
@@ -398,7 +604,7 @@ export async function sendMessageToAIAgent(
 /**
  * 中断 AIAgent
  */
-export function interruptAIAgent(sessionId: string = DEFAULT_SESSION_ID): void {
+export function interruptAIAgent(sessionId: string): void {
   logger.info(`[AIAgentManager] interruptAIAgent 被调用, sessionId=${sessionId}, 已有会话: [${Array.from(agentSessions.keys()).join(', ')}]`)
   const agent = agentSessions.get(sessionId)
   if (!agent) {
@@ -417,9 +623,38 @@ export function interruptAIAgent(sessionId: string = DEFAULT_SESSION_ID): void {
 }
 
 /**
+ * 设置 AIAgent 的计划模式
+ *
+ * 将状态记录到 planModeStates Map。
+ * 如果 agent 已存在，立即同步；如果尚未创建，在 createAgentSession 时应用。
+ */
+export function setAIAgentPlanMode(sessionId: string, enabled: boolean): void {
+  planModeStates.set(sessionId, enabled)
+
+  const agent = agentSessions.get(sessionId)
+  if (agent) {
+    agent.setPlanMode(enabled)
+  }
+  logger.info(`[AIAgentManager] 计划模式已${enabled ? '开启' : '关闭'}: sessionId=${sessionId} (agent=${agent ? '已同步' : '待创建'})`)
+}
+
+/**
+ * 查询 AIAgent 的计划模式状态
+ *
+ * 优先从 agent 实例读取，agent 不存在时从预设状态读取。
+ */
+export function getAIAgentPlanMode(sessionId: string): boolean {
+  const agent = agentSessions.get(sessionId)
+  if (agent) {
+    return agent.getPlanMode()
+  }
+  return planModeStates.get(sessionId) ?? false
+}
+
+/**
  * 查询 AIAgent 状态
  */
-export function getAIAgentStatus(sessionId: string = DEFAULT_SESSION_ID): { state: AgentState; sessionId: string | null } {
+export function getAIAgentStatus(sessionId: string): { state: AgentState; sessionId: string | null } {
   const agent = agentSessions.get(sessionId)
   if (!agent) {
     return { state: 'idle', sessionId: null }
@@ -433,7 +668,7 @@ export function getAIAgentStatus(sessionId: string = DEFAULT_SESSION_ID): { stat
 /**
  * 重置 AIAgent 会话
  */
-export function resetAIAgent(sessionId: string = DEFAULT_SESSION_ID): void {
+export function resetAIAgent(sessionId: string): void {
   // 停止并清理后台压缩器
   const compressor = backgroundCompressors.get(sessionId)
   if (compressor) {
@@ -514,41 +749,102 @@ export function setupInteractiveHandlers(mainWindow: BrowserWindow): void {
   logger.info('[AIAgentManager] 交互式 IPC 处理器已注册')
 }
 
-// ==================== 清除历史对话 IPC 处理器 ====================
+// ==================== 清除历史对话 ====================
 
 /**
- * 设置清除历史对话的 IPC 处理器。
- * 在主窗口创建完成后调用，注册 IPC 监听器。
+ * 清除指定会话的历史对话（触发记忆提取后删除）
  */
-export function setupClearHistoryHandler(mainWindow: BrowserWindow): void {
-  ipcMain.handle(IPC_CHANNELS.AGENT_CLEAR_HISTORY, async () => {
-    try {
-      // 尝试从已有的 agent 实例清除
-      const agent = agentSessions.get(DEFAULT_SESSION_ID)
-      if (agent) {
-        agent.clearHistory()
-        broadcast(IPC_CHANNELS.AGENT_STATE_CHANGE, {
-          state: agent.currentState,
-          contextUsagePercent: 0,
-        })
-      } else {
-        // agent 未创建时，直接删除数据库记录并重置内存状态
-        const db = DatabaseService.getInstance()
-        if (db) {
-          db.getAgentMessageDAO().deleteAll()
-          logger.info('[AIAgentManager] 已直接删除数据库中的对话历史')
-        } else {
-          logger.warn('[AIAgentManager] 数据库服务未初始化')
+export async function clearAgentHistory(sessionId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const agent = agentSessions.get(sessionId)
+    if (agent) {
+      // ---- 在清除前触发记忆提取 ----
+      const topicId = agent.getTopicId()
+      const nexusSessionId = agent.getNexusSessionId()
+      if (topicId && nexusSessionId) {
+        const dao = DatabaseService.getInstance()?.getAgentMessageDAO()
+        if (dao) {
+          const messages = dao.loadByTopic(topicId, nexusSessionId)
+          triggerMemoryExtraction(messages, sessionId)
         }
       }
 
-      logger.info('[AIAgentManager] 对话历史已清除')
-      return { success: true }
-    } catch (err) {
-      logger.error('[AIAgentManager] 清除对话历史失败:', err)
-      return { success: false, error: (err as Error).message }
-    }
-  })
+      agent.clearHistory()
+      broadcast(IPC_CHANNELS.AGENT_STATE_CHANGE, {
+        state: agent.currentState,
+        contextUsagePercent: 0,
+      })
+      logger.info(`[AIAgentManager] 会话 ${nexusSessionId || sessionId} 对话历史已清除`)
+    } else {
+      // agent 未创建时，先从数据库按 session 读取消息触发记忆提取，再删除
+      logger.info(`[AIAgentManager] agent 实例不存在 (sessionId=${sessionId})，尝试从数据库读取消息`)
+      const db = DatabaseService.getInstance()
+      if (db) {
+        const dao = db.getAgentMessageDAO()
+        const allMessages = dao.loadAllBySessionId(sessionId)
+        logger.info(`[AIAgentManager] 从 session ${sessionId} 读取到 ${allMessages.length} 条消息`)
 
-  logger.info('[AIAgentManager] 清除历史对话 IPC 处理器已注册')
+        if (allMessages.length >= 4) {
+          // 从数据库获取该 session 的真实 nexus_session_id
+          const realSessionId = dao.getDistinctSessionIds().find(id => id === sessionId) || sessionId
+
+          // 读取 agent 配置，配置不可用时跳过记忆提取
+          let parentConfig: AgentConfig | null = null
+          try {
+            const configDAO = db.getConfigDAO()
+            const savedConfig = configDAO.get('agentConfig') as Record<string, unknown> | null
+            if (savedConfig?.model && savedConfig?.provider && savedConfig?.apiKey && savedConfig?.apiUrl) {
+              parentConfig = {
+                provider: savedConfig.provider as AgentConfig['provider'],
+                apiUrl: savedConfig.apiUrl as string,
+                apiKey: savedConfig.apiKey as string,
+                model: savedConfig.model as string,
+                maxIterations: Number(savedConfig.maxIterations) || 200,
+                timeout: Number(savedConfig.timeout) || 600000,
+                maxRetries: Number(savedConfig.maxRetries) || 3,
+                contextLength: Number(savedConfig.contextLength) || undefined,
+                accessModes: savedConfig.accessModes as string[] | undefined,
+              }
+            }
+          } catch (e) {
+            logger.warn('[AIAgentManager] 读取 agent 配置失败:', e)
+          }
+
+          if (!parentConfig) {
+            logger.warn('[AIAgentManager] agent 配置不完整，跳过记忆提取')
+          } else {
+            logger.info('[AIAgentManager] 触发记忆提取: model=%s, nexusSessionId=%s, messages=%d', parentConfig.model, realSessionId, allMessages.length)
+            const extractor = new MemoryExtractorAgent({
+              nexusSessionId: realSessionId,
+              parentConfig,
+              summaryModelConfig: undefined,
+            })
+            extractor.extract(allMessages).then(() => {
+              logger.info('[AIAgentManager] 无 agent 实例时的记忆提取完成')
+            }).catch(err => {
+              logger.error('[AIAgentManager] 无 agent 实例时的记忆提取失败:', err)
+            })
+          }
+        } else {
+          logger.info('[AIAgentManager] 消息数不足 4 条，跳过记忆提取')
+        }
+
+        dao.deleteAllBySessionId(sessionId)
+        logger.info(`[AIAgentManager] 已删除 session ${sessionId} 的对话历史`)
+
+        // FIX: agent 不存在时也要广播 contextUsagePercent 重置
+        broadcast(IPC_CHANNELS.AGENT_STATE_CHANGE, {
+          state: 'idle',
+          contextUsagePercent: 0,
+        })
+      } else {
+        logger.warn('[AIAgentManager] 数据库服务未初始化')
+      }
+    }
+
+    return { success: true }
+  } catch (err) {
+    logger.error('[AIAgentManager] 清除对话历史失败:', err)
+    return { success: false, error: (err as Error).message }
+  }
 }

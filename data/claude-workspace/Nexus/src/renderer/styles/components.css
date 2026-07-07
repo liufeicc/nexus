@@ -1,0 +1,22 @@
+/**
+ * 组件样式入口
+ * 各组件样式已拆分为独立文件
+ */
+
+@import './buttons.css';
+@import './session-item.css';
+@import './toolbar.css';
+@import './theme-switcher.css';
+@import './context-menu.css';
+@import './modal.css';
+@import './settings.css';
+@import './path-autocomplete.css';
+@import './terminal.css';
+@import './toast.css';
+@import './browser.css';
+@import './file-panel.css';
+@import './file-viewer.css';
+@import './replace-panel.css';
+@import './hud-approval.css';
+@import './hud-clarify.css';
+@import './error-boundary.css';

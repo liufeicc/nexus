@@ -1,0 +1,362 @@
+/**
+ * 文件预览搜索栏和文档查看器样式
+ */
+
+.file-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  height: 32px;
+  min-height: 32px;
+  flex-shrink: 0;
+}
+
+.file-search-input {
+  flex: 1;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+}
+
+.file-search-input:focus {
+  border-color: var(--accent-color);
+}
+
+.file-search-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+}
+
+.file-search-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.file-search-btn:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.file-search-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.file-search-close-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.file-search-close-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.search-highlight {
+  background-color: #fef08a;
+  color: #000;
+  border-radius: 2px;
+}
+
+.search-highlight.current-match {
+  background-color: #f59e0b;
+  color: #000;
+  outline: 2px solid #f59e0b;
+}
+
+.docx-viewer-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background: #f5f5f5;
+}
+
+.docx-loading,
+.docx-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.docx-error {
+  color: #e53935;
+}
+
+.docx-content {
+  flex: 1;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.docx-content > .docx-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  min-height: 100%;
+}
+
+.xlsx-viewer-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.xlsx-loading,
+.xlsx-error,
+.xlsx-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.xlsx-error {
+  color: #e53935;
+}
+
+.xlsx-table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.xlsx-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  width: max-content;
+}
+
+.xlsx-table th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.xlsx-table .xlsx-row-num {
+  background-color: var(--bg-secondary);
+  color: var(--text-muted);
+  font-weight: 400;
+  width: 40px;
+  text-align: center;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  border: 1px solid var(--border-color);
+  padding: 4px 4px;
+}
+
+.xlsx-table td {
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.xlsx-table tbody tr:nth-child(even) td {
+  background-color: var(--bg-secondary);
+}
+
+.xlsx-table tbody tr:hover td {
+  background-color: var(--bg-tertiary);
+}
+
+.xlsx-sheet-tabs {
+  display: flex;
+  gap: 1px;
+  padding: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.xlsx-sheet-tabs::-webkit-scrollbar {
+  height: 0;
+}
+
+.xlsx-sheet-tab {
+  padding: 4px 14px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.xlsx-sheet-tab:last-child {
+  border-right: none;
+}
+
+.xlsx-sheet-tab:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.xlsx-sheet-tab.active {
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 500;
+}
+
+.pptx-viewer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #1a1a2e;
+  padding: 16px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.pptx-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.pptx-placeholder-icon {
+  width: 48px;
+  height: 48px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.pptx-placeholder-text {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.pptx-placeholder-text h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.pptx-placeholder-text p {
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.pptx-slide-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.pptx-nav-btn {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.pptx-nav-btn:disabled {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.pptx-slide-counter {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 48px;
+  text-align: center;
+}
+
+/* CodeMirror 编辑器样式 */
+.file-viewer .cm-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--bg-primary) !important;
+}
+
+.file-viewer .cm-scroller {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  tab-size: 4;
+  background: var(--bg-primary) !important;
+}
+
+.file-viewer .cm-content {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* 隐藏 CodeMirror 内置搜索面板（使用自定义 FileSearchBar） */
+.file-viewer .cm-panel.cm-search {
+  display: none;
+}
+
+/* 覆盖 oneDark 主题的灰色背景，使用主题变量 */
+.file-viewer .cm-editor.cm-focused {
+  background: var(--bg-primary) !important;
+}
+
+.file-viewer .cm-gutters {
+  background: var(--bg-primary) !important;
+  border-right: 1px solid var(--border-color);
+}
+
+/* 禁用当前行高亮，避免拖动选择文本时覆盖选区背景色 */
+.file-viewer .cm-activeLine {
+  background: transparent !important;
+}
+
+.file-viewer .cm-activeLineGutter {
+  background: transparent !important;
+}
+

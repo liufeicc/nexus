@@ -1,0 +1,75 @@
+/**
+ * 路径自动补全样式
+ */
+
+.path-autocomplete-dropdown {
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  width: 460px;
+}
+
+.path-autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-size: 13px;
+}
+
+.path-autocomplete-item:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.path-autocomplete-item:last-child {
+  border-radius: 0 0 6px 6px;
+}
+
+.path-autocomplete-item:hover,
+.path-autocomplete-item.selected {
+  background-color: var(--bg-tertiary);
+}
+
+.path-autocomplete-item .autocomplete-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.path-autocomplete-item .autocomplete-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.path-autocomplete-item .autocomplete-path {
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  text-align: right;
+}
+
+.path-autocomplete-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.path-autocomplete-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.path-autocomplete-dropdown::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
+.path-autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}

@@ -27,7 +27,7 @@ export interface ElectronAPI {
     getAll: () => Promise<Partial<ConfigValueMap>>
     delete: (key: string) => Promise<void>
     testModel: (config: {
-      provider: 'openai' | 'anthropic'
+      provider: string
       apiUrl: string
       apiKey: string
       model: string
@@ -39,6 +39,33 @@ export interface ElectronAPI {
       supportsVision: boolean
       error?: string
     }>
+    testEmail: (config: {
+      imapHost: string
+      imapPort: number
+      imapSecure: boolean
+      smtpHost: string
+      smtpPort: number
+      smtpSecure: boolean
+      email: string
+      appPassword: string
+    }) => Promise<{
+      success: boolean
+      message?: string
+      error?: string
+    }>
+    getModelCatalog: () => Promise<Array<{
+      id: number
+      displayName: string
+      modelName: string
+      provider: string
+      interfaceType: string
+      defaultApiUrl: string
+      contextLength: number
+      description: string | null
+      sortWeight: number
+    }>>
+    /** 监听语言变更事件（灵动岛窗口使用） */
+    onLanguageChanged: (callback: (lang: string) => void) => () => void
   }
 
   // 会话管理
@@ -89,6 +116,8 @@ export interface ElectronAPI {
     getPath: (name: string) => Promise<string>
     getVersion: () => Promise<string>
     getResourcePath: (filename: string) => Promise<string | null>
+    /** 获取操作系统 locale */
+    getLocale: () => Promise<string>
   }
 
   // 路径检查
@@ -110,12 +139,13 @@ export interface ElectronAPI {
   clipboard: {
     readText: () => Promise<string>
     writeText: (text: string) => Promise<void>
+    readFiles: () => Promise<string[]>
   }
 
   // 文件系统
   fs: {
     readdir: (dirPath: string) => Promise<{
-      items: Array<{ name: string; path: string; type: 'file' | 'directory' | 'symlink'; size?: number }>
+      items: Array<{ name: string; path: string; type: 'file' | 'directory' | 'symlink'; size?: number; mtime?: number }>
       error: string | null
     }>
     readFile: (filePath: string) => Promise<{
@@ -158,6 +188,19 @@ export interface ElectronAPI {
       mimeType: string
       error: string | null
     }>
+    /** 检测系统是否安装 LibreOffice */
+    checkLibreOffice: () => Promise<{
+      success: boolean
+      installed: boolean
+      path: string
+      error?: string
+    }>
+    /** 使用 LibreOffice 将文件转换为 PDF */
+    convertToPdf: (filePath: string) => Promise<{
+      success: boolean
+      pdfPath: string
+      error: string | null
+    }>
     /** 重命名文件或目录 */
     rename: (oldPath: string, newPath: string) => Promise<{ error: string | null }>
     /** 创建文件夹（自动处理重名冲突） */
@@ -172,6 +215,7 @@ export interface ElectronAPI {
     trashFileItem: (paths: string | string[]) => Promise<{ successCount: number; errorCount: number; errors: string[] }>
     /** 重命名文件/目录（智能体文件管理工具使用） */
     renameFileItem: (oldPath: string, newName: string) => Promise<{ error: string | null; newPath?: string }>
+    openWithSystem: (filePath: string) => Promise<{ error: string | null }>
   }
 
   // 浏览器控制
@@ -208,6 +252,10 @@ export interface ElectronAPI {
     destroy: (browserId: string) => Promise<void>
     /** 截取指定标签的快照，返回 base64 dataURL */
     capturePage: (browserId: string, tabId: string) => Promise<string>
+    /** 锁定标签：注入 CSS/JS 阻止用户交互（智能体操作不受影响） */
+    lockTab: (browserId: string, tabId: string) => Promise<void>
+    /** 解锁标签：移除注入的 CSS/JS 恢复用户交互 */
+    unlockTab: (browserId: string, tabId: string) => Promise<void>
     /** 浏览器历史管理 */
     history: {
       save: (url: string, title?: string) => Promise<void>
@@ -258,17 +306,16 @@ export interface ElectronAPI {
 
   // 智能体管理
   agent: {
-    /** 启动智能体（同时启动 UDS 服务器） */
-    start: () => Promise<void>
-    /** 停止智能体（同时停止 UDS 服务器） */
-    stop: () => Promise<void>
-
     /** 发送消息给 AIAgent（异步，结果通过事件返回） */
     sendMessage: (content: string, attachments?: AttachedFile[], sessionId?: string) => Promise<{ success: boolean; error?: string }>
     /** 中断 AIAgent 当前运行 */
     interrupt: (sessionId?: string) => Promise<void>
     /** 查询 AIAgent 状态 */
     getStatus: (sessionId?: string) => Promise<{ state: string; sessionId: string | null }>
+    /** 设置计划模式开关 */
+    setPlanMode: (enabled: boolean, sessionId?: string) => Promise<void>
+    /** 查询当前计划模式状态 */
+    getPlanMode: (sessionId?: string) => Promise<boolean>
 
     /** 监听流式文本增量 */
     onStreaming: (callback: (data: { text: string }) => void) => () => void
@@ -312,6 +359,14 @@ export interface ElectronAPI {
       progress?: number
     }) => void) => () => void
 
+    /** 监听计划更新 (todo 任务列表变更) */
+    onPlanUpdate: (callback: (data: {
+      todos: Array<{ id: string; content: string; status: string }>
+    }) => void) => () => void
+
+    /** 监听 AI 自动切换计划模式事件 */
+    onPlanModeChanged: (callback: (data: { planMode: boolean }) => void) => () => void
+
     // --- 交互式交互 ---
 
     /** 监听危险命令审批请求 */
@@ -331,14 +386,17 @@ export interface ElectronAPI {
     /** 发送 clarify 回答回主进程 */
     sendClarifyResult: (data: { response: string }) => Promise<{ success: boolean }>
 
-    /** 清除当前会话的对话历史 */
-    clearHistory: () => Promise<{ success: boolean; error?: string }>
+    /** 清除指定会话的对话历史 */
+    clearHistory: (sessionId: string) => Promise<{ success: boolean; error?: string }>
 
-    /** 手动触发对话历史压缩 */
-    compressHistory: () => Promise<{ success: boolean }>
+    /** 手动触发指定会话的对话历史压缩 */
+    compressHistory: (sessionId: string) => Promise<{ success: boolean }>
 
     /** 获取初始上下文使用率 */
     getContextUsage: () => Promise<{ contextUsagePercent: number }>
+
+    /** 加载指定会话的对话历史（用于 UI 恢复） */
+    loadHistory: (sessionId: string) => Promise<Array<{ question: string; answer: string; timestamp: number }>>
   }
 
   // 文件附件
@@ -391,18 +449,32 @@ export interface ElectronAPI {
     manage: (action: string, name?: string, content?: string) => Promise<{ success: boolean; message: string }>
   }
 
+  // Skill 技能管理
+  skill: {
+    /** 获取技能列表 */
+    list: () => Promise<{ success: boolean; skills?: Array<{ name: string; description: string; category: string | null; path: string; platformCompatible: boolean; readinessStatus: string; trustLevel: string; missingEnvVars: string[] }>; error?: string }>
+    /** 获取单个技能完整内容 */
+    view: (name: string) => Promise<{ success: boolean; content?: { name: string; description: string; content: string; linkedFiles?: { references?: string[]; templates?: string[]; assets?: string[]; scripts?: string[] } | null; tags: string[]; relatedSkills: string[]; warnings: string[] }; error?: string }>
+    /** 管理技能（创建/编辑/删除） */
+    manage: (action: string, name?: string, content?: string) => Promise<{ success: boolean; message: string }>
+  }
+
   // Nexus 连接管理
   nexus: {
     /** 请求连接终端面板 */
     connect: (panelId: string, ptyId: string) => Promise<{ success: boolean; error?: string }>
     /** 请求连接浏览器面板 */
-    connectBrowser: (panelId: string, browserId: string, tabId: string) => Promise<{ success: boolean; error?: string }>
+    connectBrowser: (panelId: string) => Promise<{ success: boolean; error?: string }>
     /** 请求连接文件面板 */
     connectFile: (panelId: string) => Promise<{ success: boolean; error?: string }>
-    /** 请求断开连接 */
+    /** 请求断开所有连接 */
     disconnect: () => Promise<{ success: boolean; error?: string }>
+    /** 仅断开浏览器轨连接 */
+    disconnectBrowser: () => Promise<{ success: boolean; error?: string }>
+    /** 仅断开数据轨连接 */
+    disconnectData: () => Promise<{ success: boolean; error?: string }>
     /** 监听连接状态变化 */
-    onConnectionStateChanged: (callback: (data: { panelId: string | null; connected: boolean }) => void) => () => void
+    onConnectionStateChanged: (callback: (data: { panelId: string | null; connected: boolean; track: 'browser' | 'data' }) => void) => () => void
   }
 
   // 输入历史
@@ -411,6 +483,65 @@ export interface ElectronAPI {
     list: (limit?: number) => Promise<Array<{ id: number; text: string; createdAt: number }>>
     delete: (id: number) => Promise<void>
     clear: () => Promise<void>
+  }
+
+  // 引导窗口
+  /** 引导完成：保存配置并创建主窗口 */
+  onboardingComplete: (agentConfig: any, subAgentConfig: any, emailConfig?: {
+    enabled: boolean
+    account: {
+      email: string
+      appPassword: string
+      imapHost: string
+      imapPort: number
+      imapSecure: boolean
+      smtpHost: string
+      smtpPort: number
+      smtpSecure: boolean
+      displayName?: string
+    } | null
+  }) => Promise<{ success: boolean; error?: string }>
+  /** 跳过引导：直接创建主窗口 */
+  onboardingSkip: () => Promise<{ success: boolean; error?: string }>
+
+  // 记忆管理
+  memory: {
+    /** 获取记忆列表 */
+    list: () => Promise<{ success: boolean; memories?: Array<{ id: string; content: string; scope: 'memory' | 'user'; source: 'entry' | 'fact'; trustScore?: number; retrievalCount?: number; createdAt: number; updatedAt: number }>; error?: string }>
+    /** 获取单条记忆详情 */
+    view: (id: string, source: string) => Promise<{ success: boolean; memory?: { id: string; content: string; scope: 'memory' | 'user'; createdAt: number; updatedAt: number }; error?: string }>
+    /** 删除记忆 */
+    delete: (id: string, source: string) => Promise<{ success: boolean; message: string; error?: string }>
+    /** 保存用户偏好 */
+    saveUserPref: (content: string) => Promise<{ success: boolean; error?: string }>
+    /** 获取用户偏好 */
+    getUserPref: () => Promise<{ success: boolean; content?: string; error?: string }>
+  }
+
+  // 自动更新
+  update: {
+    /** 检查更新 */
+    checkForUpdate: () => Promise<{ success: boolean; error?: string }>
+    /** 下载更新 */
+    downloadUpdate: () => Promise<{ success: boolean; error?: string }>
+    /** 安装更新并重启 */
+    installAndRestart: () => Promise<void>
+    /** 监听更新状态变更 */
+    onUpdateState: (callback: (data: { state: string; version?: string; progress?: number; releaseNotes?: string }) => void) => () => void
+    /** 监听更新错误 */
+    onUpdateError: (callback: (data: { error: string }) => void) => () => void
+  }
+
+  // 目录档案 NEXUS.md
+  nexusProfile: {
+    /** 读取指定目录的 NEXUS.md */
+    read: (dir: string) => Promise<{ exists: boolean; content: string; error?: string }>
+    /** 写入指定目录的 NEXUS.md */
+    write: (dir: string, content: string) => Promise<{ success: boolean; error?: string }>
+    /** 检查目录下是否存在 NEXUS.md */
+    exists: (dir: string) => Promise<{ exists: boolean }>
+    /** 自动生成指定目录的 NEXUS.md */
+    generate: (dir: string) => Promise<{ success: boolean; error?: string }>
   }
 
   // 配置变更事件

@@ -31,7 +31,7 @@ export interface SkillFrontmatter {
   }
   /** 扩展元数据 */
   metadata?: {
-    hermes?: {
+    nexus?: {
       /** 分类标签 */
       tags?: string[]
       /** 关联 skill 名称列表 */

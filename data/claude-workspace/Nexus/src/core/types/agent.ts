@@ -12,7 +12,6 @@
  * 上下文压缩器配置
  *
  * 控制当对话历史接近模型上下文窗口限制时的压缩行为。
- * 模仿 Hermes 的 ContextCompressor 配置。
  */
 export interface ContextCompressorConfig {
   /** 保护头部消息数（system prompt + 首轮对话），默认 3 */
@@ -30,7 +29,7 @@ export interface ContextCompressorConfig {
  */
 export interface AgentConfig {
   /** LLM 提供商类型 */
-  provider: 'openai' | 'anthropic'
+  provider: string
   /** API 地址（OpenAI 兼容接口或 Anthropic 接口） */
   apiUrl: string
   /** API 密钥 */
@@ -39,7 +38,7 @@ export interface AgentConfig {
   model: string
   /** 最大迭代次数，防止智能体无限循环，默认 90 */
   maxIterations?: number
-  /** 单次请求超时时间（毫秒），默认 60000 */
+  /** 单次请求超时时间（毫秒），默认 600000（600 秒） */
   timeout?: number
   /** 重试次数，默认 3 */
   maxRetries?: number
@@ -191,7 +190,6 @@ export interface ToolParameters {
  * 工具定义
  *
  * 注册一个工具到智能体中，包含名字、描述、参数 schema 和处理函数。
- * 类似 Hermes 的 ToolEntry，是工具的"元数据 + 行为"的完整描述。
  */
 export interface ToolDefinition {
   /** 工具名称（如 "read_file", "terminal"） */
