@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://cok84btdity3b"]
+
+[ext_resource type="Script" uid="uid://deek3g4a1a1cf" path="res://scripts/CameraPull.cs" id="1"]
+[ext_resource type="PackedScene" uid="uid://c1toibfp4gj5q" path="res://scenes/Starship.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://enemy_scene" path="res://scenes/Enemy.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://dyfoawgn03olh" path="res://scenes/HUD.tscn" id="4"]
+
+[node name="Main" type="Node2D"]
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Background"]
+
+[node name="Stars" type="ColorRect" parent="Background/ParallaxLayer"]
+offset_left = -500.0
+offset_top = -500.0
+offset_right = 2000.0
+offset_bottom = 1500.0
+color = Color(0.04, 0.04, 0.18, 1)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+script = ExtResource("1")
+
+[node name="Starship" parent="." instance=ExtResource("2")]
+position = Vector2(200, 360)
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+position = Vector2(1280, 360)
+
+[node name="HUD" parent="." instance=ExtResource("4")]

@@ -1,0 +1,7 @@
+# Godot 4
+.godot/
+.mono/
+obj/
+bin/
+*.import
+*.tmp

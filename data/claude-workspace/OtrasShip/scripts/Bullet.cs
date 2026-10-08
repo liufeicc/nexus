@@ -1,0 +1,84 @@
+using Godot;
+
+/// <summary>
+/// 直线弹体。
+/// 挂在 Area2D 节点上，沿发射方向匀速移动，超出边界或碰撞后销毁。
+/// </summary>
+[GlobalClass]
+public partial class Bullet : Area2D
+{
+    /// <summary>子弹速度（像素/秒）</summary>
+    [Export] public float Speed = 600f;
+
+    /// <summary>子弹伤害</summary>
+    [Export] public float Damage = 25f;
+
+    /// <summary>移动方向（归一化）</summary>
+    private Vector2 _direction = Vector2.Right;
+
+    /// <summary>是否已标记销毁</summary>
+    private bool _markedForDeletion = false;
+
+    /// <summary>屏幕边界（用于检测出界）</summary>
+    private float _screenWidth = 1280f;
+    private float _screenHeight = 720f;
+
+    public override void _Ready()
+    {
+        // Area2D 之间的碰撞通过 AreaEntered 检测
+        AreaEntered += OnAreaEntered;
+
+        // 触发绘制
+        QueueRedraw();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_markedForDeletion) return;
+
+        // 沿方向移动
+        Position += _direction * Speed * (float)delta;
+
+        // 检查是否超出屏幕边界
+        if (Position.X < -100 || Position.X > _screenWidth + 100 ||
+            Position.Y < -100 || Position.Y > _screenHeight + 100)
+        {
+            QueueFree();
+        }
+    }
+
+    public override void _Draw()
+    {
+        // 绘制 12x6 橙黄色子弹，中心在原点
+        var color = new Color(0.96f, 0.68f, 0.33f, 1f);
+        var rect = new Rect2(-6, -3, 12, 6);
+        DrawRect(rect, color);
+    }
+
+    /// <summary>
+    /// 初始化子弹：设置方向、伤害、发射位置
+    /// </summary>
+    public void Init(Vector2 direction, float damage, Vector2 position)
+    {
+        _direction = direction.Normalized();
+        Damage = damage;
+        Position = position;
+    }
+
+    /// <summary>
+    /// 碰撞回调：命中 Area2D 实体时扣血（如敌人）
+    /// </summary>
+    private void OnAreaEntered(Area2D area)
+    {
+        if (_markedForDeletion) return;
+        _markedForDeletion = true;
+
+        // 如果碰撞体有 TakeDamage 方法，调用它
+        if (area.HasMethod("TakeDamage"))
+        {
+            area.Call("TakeDamage", Damage);
+        }
+
+        QueueFree();
+    }
+}
