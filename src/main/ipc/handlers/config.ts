@@ -97,17 +97,19 @@ export function registerConfigHandlers(): void {
     invalidateConfigCache()
     logger.info(`[ConfigHandler] 配置 ${key} 已保存，缓存已失效`)
 
-    // 通知渲染进程配置已变更
-    const mainWindow = BrowserWindow.getAllWindows()[0]
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(IPC_CHANNELS.CONFIG_CHANGED, { key })
+    // 通知所有渲染进程配置已变更（主窗口/灵动岛/overlay 弹层窗口均需感知，如主题变更）
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send(IPC_CHANNELS.CONFIG_CHANGED, { key })
+      }
     }
 
-    // 语言变更时，也通知灵动岛窗口重新加载翻译
-    if (key === 'language' && dynamicIslandManagerRef) {
-      const islandWin = dynamicIslandManagerRef.getWindow()
-      if (islandWin && !islandWin.isDestroyed()) {
-        islandWin.webContents.send('language-changed', { lang: value })
+    // 语言变更时，通知所有窗口重新加载翻译（含灵动岛与 overlay）
+    if (key === 'language') {
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send('language-changed', { lang: value })
+        }
       }
     }
   })

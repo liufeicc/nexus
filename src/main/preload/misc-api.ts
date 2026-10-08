@@ -73,6 +73,26 @@ export const onMaximizedChanged = (callback: (isMaximized: boolean) => void) => 
   return () => ipcRenderer.removeListener(IPC_CHANNELS.WINDOW_MAXIMIZED_CHANGED, listener)
 }
 
+// ===== 面板焦点方向切换 =====
+/**
+ * 监听面板焦点方向切换请求
+ *
+ * 浏览器面板是原生 WebContentsView，键盘焦点在页面内时渲染进程收不到按键，
+ * 因此由主进程捕获 Alt+方向键后通过该事件转发过来。
+ */
+export const onPanelNav = (
+  callback: (direction: 'left' | 'right' | 'up' | 'down') => void
+) => {
+  const listener = (
+    _event: Electron.IpcRendererEvent,
+    direction: 'left' | 'right' | 'up' | 'down'
+  ) => {
+    callback(direction)
+  }
+  ipcRenderer.on(IPC_CHANNELS.WINDOW_PANEL_NAV, listener)
+  return () => ipcRenderer.removeListener(IPC_CHANNELS.WINDOW_PANEL_NAV, listener)
+}
+
 // ===== 操作记录 =====
 export const operation = {
   /** 获取自上次读取后的新操作 */

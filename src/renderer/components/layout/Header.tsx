@@ -28,7 +28,7 @@ function LogoImage() {
 }
 
 export function Header() {
-  const { currentThemeId, setCurrentThemeId, showConfirmModal, hideConfirmModal, settingsModalVisible, setSettingsModalVisible } = useAppStore()
+  const { currentThemeId, setCurrentThemeId, showConfirmModal, hideConfirmModal, settingsModalVisible, setSettingsModalVisible, setDomPopupOpen } = useAppStore()
   const { t } = useI18n()
   const [showThemeDropdown, setShowThemeDropdown] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
@@ -62,17 +62,19 @@ export function Header() {
     }
   }, [showThemeDropdown])
 
-  // 主题下拉框打开时截图占位，关闭时清除
+  // 主题下拉框打开时截图占位 + 应用面板让路，关闭时恢复
   const wasDropdownVisibleRef = React.useRef(false)
   React.useEffect(() => {
     if (showThemeDropdown && !wasDropdownVisibleRef.current) {
       wasDropdownVisibleRef.current = true
       captureAllBrowsersBeforeModal()
+      setDomPopupOpen(true)
     } else if (!showThemeDropdown && wasDropdownVisibleRef.current) {
       wasDropdownVisibleRef.current = false
       clearAllBrowserSnapshots()
+      setDomPopupOpen(false)
     }
-  }, [showThemeDropdown])
+  }, [showThemeDropdown, setDomPopupOpen])
 
   // 监听窗口大小变化
   React.useEffect(() => {

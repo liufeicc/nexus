@@ -52,7 +52,8 @@
     "nexusProfile": "目录说明",
     "noActiveSession": "请先点击左侧边栏底部的 [+] 按钮新建会话",
     "confirmClosePanel": "关闭面板",
-    "confirmClosePanelMsg": "确定要关闭这个面板吗？该操作会终止终端进程。"
+    "confirmClosePanelMsg": "确定要关闭这个面板吗？该操作会终止终端进程。",
+    "newApp": "应用面板"
   },
   "settings": {
     "title": "设置",
@@ -158,6 +159,7 @@
     "terminalPanel": "终端面板",
     "filePanel": "文件面板",
     "browserPanel": "浏览器面板",
+    "appPanel": "应用面板",
     "new": "新建"
   },
   "filePanel": {
@@ -318,7 +320,8 @@
     "closePanel": "关闭面板",
     "terminalPanel": "终端面板",
     "filePanel": "文件面板",
-    "browserPanel": "浏览器面板"
+    "browserPanel": "浏览器面板",
+    "appPanel": "应用面板"
   },
   "session": {
     "confirmDelete": "确定要删除会话\"{name}\"吗？此操作不可恢复。",
@@ -509,10 +512,6 @@
     "license": "开源协议",
     "licenseName": "GNU General Public License v3.0"
   },
-  "nexus": {
-    "connected": "已连接 Nexus",
-    "disconnected": "已断开 Nexus 连接"
-  },
   "update": {
     "checkForUpdates": "检查更新",
     "checking": "正在检查更新...",
@@ -526,5 +525,19 @@
     "error": "更新出错: {error}",
     "disabledInDev": "开发模式下更新已禁用",
     "notSupported": "此包类型不支持自动更新"
+  },
+  "appPanel": {
+    "searchPlaceholder": "搜索应用…",
+    "loupeToggle": "放大镜（中键/点此循环：关→跟随→固定；固定时拖边框改大小）",
+    "loupeUnavailable": "放大镜仅在缩放模式可用（面板较小时自动启用）",
+    "empty": "未找到匹配的应用",
+    "unsupported": "当前环境不支持应用面板",
+    "launchFailed": "启动失败",
+    "starting": "正在启动",
+    "exited": "已退出",
+    "relaunch": "重新打开",
+    "retry": "重试",
+    "pin": "置顶",
+    "unpin": "取消置顶"
   }
 }

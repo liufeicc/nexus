@@ -7,6 +7,7 @@ import { LayoutTree, LayoutChild, PanelNode } from '../../store'
 import TerminalPanel from '../terminal/TerminalPanel'
 import FileBrowserPanel from '../file-browser/FileBrowserPanel'
 import { BrowserPanel as BrowserPanelView } from '../browser/BrowserPanel'
+import { AppPanel as AppPanelView } from '../app-panel/AppPanel'
 import { PanelState } from '../../store'
 import { useAppStore } from '../../store'
 import type { PanelType } from '../../store'
@@ -213,6 +214,11 @@ export function LayoutRenderer({ layout, panelsMap, depth = 0, path = [] }: Layo
           initialUrl={initialUrl}
         />
       )
+    }
+
+    // 应用面板（虚拟显示器嵌入）
+    if (panelState.panelType === 'app') {
+      return <AppPanelView panelId={panelState.id} />
     }
 
     // 终端面板（默认）

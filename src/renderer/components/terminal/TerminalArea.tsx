@@ -8,6 +8,7 @@ import type { TerminalPanel as TerminalPanelType, FileBrowserPanel as FileBrowse
 import LayoutRenderer from '../layout/LayoutRenderer'
 import TerminalPanel from './TerminalPanel'
 import FileBrowserPanel from '../file-browser/FileBrowserPanel'
+import AppPanel from '../app-panel/AppPanel'
 
 export function TerminalArea() {
   const { activeSessionId, sessionsPanels, sessionsLayouts } = useAppStore()
@@ -84,6 +85,14 @@ export function TerminalArea() {
                             panelId={panel.id}
                             rootPath={fbp.rootPath || ''}
                             currentPath={fbp.currentPath}
+                          />
+                        )
+                      }
+                      if (panel.panelType === 'app') {
+                        return (
+                          <AppPanel
+                            key={panel.id}
+                            panelId={panel.id}
                           />
                         )
                       }

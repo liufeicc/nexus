@@ -25,6 +25,7 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
     activeSessionId,
     showPathSelectorModal,
     showToast,
+    setAppPickerVisible,
   } = useAppStore()
 
   const barRef = useRef<HTMLDivElement>(null)
@@ -50,12 +51,13 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
     }
   }, [onClose])
 
-  const handleReplace = useCallback(async (type: 'terminal' | 'file' | 'browser') => {
+  const handleReplace = useCallback(async (type: 'terminal' | 'file' | 'browser' | 'app') => {
     const panel = panels.find(p => p.id === panelId)
     if (!panel) return
 
     if (type === 'terminal') {
-      // 先弹出路径选择，选完再 kill 旧 PTY 并替换
+      // 先弹出路径选择，选完再替换（旧面板资源由 replacePanelInPlace 统一清理，
+      // 避免用户选择路径时终端先显示"进程已退出"）
       showPathSelectorModal(async (selectedPath) => {
         try {
           const ptyId = await window.electronAPI.pty.create({
@@ -65,10 +67,6 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
           if (!ptyId) {
             showToast(t('toast.createTerminalFailed'))
             return
-          }
-          // 替换前才 kill 旧 PTY，避免用户选择路径时终端先显示"进程已退出"
-          if (panel.panelType === 'terminal' && panel.ptyId) {
-            try { window.electronAPI.pty.kill(panel.ptyId) } catch {}
           }
           replacePanelInPlace(panelId, {
             panelType: 'terminal',
@@ -84,11 +82,8 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
         }
       })
     } else if (type === 'file') {
-      // 文件面板替换前 kill 旧 PTY
+      // 文件面板替换（旧面板资源由 replacePanelInPlace 统一清理）
       showPathSelectorModal((selectedPath) => {
-        if (panel.panelType === 'terminal' && panel.ptyId) {
-          try { window.electronAPI.pty.kill(panel.ptyId) } catch {}
-        }
         replacePanelInPlace(panelId, {
           panelType: 'file-browser',
           rootPath: selectedPath,
@@ -100,8 +95,12 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
         saveSnapshot(activeSessionId!)
         onClose()
       })
+    } else if (type === 'app') {
+      // 应用面板：打开选择浮层（替换模式），由浮层完成原地替换
+      setAppPickerVisible(true, panelId)
+      onClose()
     } else {
-      // 浏览器面板替换前 kill 旧 PTY
+      // 浏览器面板替换（旧面板资源由 replacePanelInPlace 统一清理）
       let resolvedUrl = 'about:blank'
       try {
         const defaultUrl = await window.electronAPI.config.get('browserDefaultUrl')
@@ -109,9 +108,6 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
           resolvedUrl = defaultUrl.trim()
         }
       } catch {}
-      if (panel.panelType === 'terminal' && panel.ptyId) {
-        try { window.electronAPI.pty.kill(panel.ptyId) } catch {}
-      }
       const initialTabId = `tab-${Date.now()}-init`
       const initialTab = { id: initialTabId, url: resolvedUrl, title: t('panel.newTab'), isLoading: false }
       replacePanelInPlace(panelId, {
@@ -161,6 +157,18 @@ export function ReplacePanelIcons({ panelId, onClose }: ReplacePanelIconsProps) 
       >
         <svg viewBox="0 0 24 24" fill="#ff9800">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+        </svg>
+      </div>
+      <div
+        className="replace-panel-bar-item"
+        title={t('panel.appPanel')}
+        onClick={(e) => {
+          e.stopPropagation()
+          handleReplace('app')
+        }}
+      >
+        <svg viewBox="0 0 24 24" fill="#ab47bc">
+          <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" />
         </svg>
       </div>
     </div>

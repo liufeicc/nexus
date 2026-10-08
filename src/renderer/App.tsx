@@ -6,18 +6,8 @@ import { themes, applyTheme } from '../core/constants/themes'
 import { useGlobalContextMenu, useKeyboardShortcuts, useSaveOnExit } from './hooks/useGlobalEvents'
 import { useAgentFileBridge } from './hooks/use-agent-file-bridge'
 import { useAppStore } from './store'
-import { ConfirmModal } from './components/common/ConfirmModal'
-import { RenameModal } from './components/common/RenameModal'
-import { PathSelectorModal } from './components/common/PathSelectorModal'
-import { FileRenameModal } from './components/common/FileRenameModal'
-import { SettingsModal } from './components/common/SettingsModal'
-import { Toast } from './components/common/Toast'
-import { ContextMenu } from './components/common/ContextMenu'
-import { ApprovalModal } from './components/common/ApprovalModal'
-import { ClarifyModal } from './components/common/ClarifyModal'
-import { AboutModal } from './components/common/AboutModal'
-import { NexusProfileModal } from './components/common/NexusProfileModal'
 import { initLanguage, setGlobalLanguageSync } from './i18n'
+import { movePanelFocus } from './utils/panel-focus'
 
 /**
  * Nexus 应用根组件
@@ -32,6 +22,14 @@ function App() {
 
   // 智能体文件操作桥接（自动在文件面板打开预览）
   useAgentFileBridge()
+
+  // 面板焦点方向切换：接收主进程从浏览器原生视图转发的 Alt+方向键
+  React.useEffect(() => {
+    const cleanup = window.electronAPI.onPanelNav((direction) => {
+      movePanelFocus(direction)
+    })
+    return cleanup
+  }, [])
 
   // 交互式 IPC 监听：审批 + clarify
   React.useEffect(() => {
@@ -95,17 +93,8 @@ function App() {
     <>
       <MainLayout />
       {/* 灵动岛已移至独立窗口，此处不再渲染 */}
-      <ConfirmModal />
-      <RenameModal />
-      <PathSelectorModal />
-      <FileRenameModal />
-      <SettingsModal />
-      <Toast />
-      <ContextMenu />
-      <ApprovalModal />
-      <ClarifyModal />
-      <AboutModal />
-      <NexusProfileModal />
+      {/* 全部覆盖式弹层（Toast/Confirm/About/Rename/FileRename/PathSelector/Settings/
+          Approval/Clarify/NexusProfile/ContextMenu/AppPicker/替换条）已迁移至共享置顶弹层窗口（overlay-entry） */}
     </>
   )
 }

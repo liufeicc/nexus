@@ -5,8 +5,8 @@
  * 所有状态和处理器委托给 useSettingsConfig hook。
  */
 
-import React, { useEffect } from 'react'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../../store'
+import React from 'react'
+import { useAppStore } from '../../../store'
 import { useSettingsConfig, type SettingsCategory } from './use-settings-config'
 import { ModelConfigPanel } from './ModelConfigPanel'
 import { LanguagePanel } from './LanguagePanel'
@@ -18,13 +18,6 @@ export function SettingsModal() {
   const { t } = useI18n()
 
   const config = useSettingsConfig()
-
-  // 打开设置时捕获浏览器快照（useEffect 确保副作用不在渲染阶段执行）
-  useEffect(() => {
-    if (settingsModalVisible) {
-      captureAllBrowsersBeforeModal()
-    }
-  }, [settingsModalVisible])
 
   if (!settingsModalVisible) return null
 
@@ -177,7 +170,7 @@ export function SettingsModal() {
           >
             {t('common.apply')}
           </button>
-          <button className="modal-btn modal-btn-confirm" onClick={() => { clearAllBrowserSnapshots(); setSettingsModalVisible(false) }} autoFocus>
+          <button className="modal-btn modal-btn-confirm" onClick={() => { setSettingsModalVisible(false) }} autoFocus>
             {t('common.close')}
           </button>
         </div>

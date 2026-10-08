@@ -120,6 +120,54 @@ export interface ElectronAPI {
     getLocale: () => Promise<string>
   }
 
+  // 应用面板（虚拟显示器嵌入）
+  appPanel: {
+    supported: () => Promise<{ available: boolean; reason?: string }>
+    listApps: () => Promise<{
+      apps: Array<{ appId: string; name: string; exec: string; icon?: string; startupWMClass?: string; categories?: string }>
+    }>
+    getIcon: (appId: string) => Promise<string | null>
+    launch: (
+      panelId: string,
+      app: { exec: string; name: string },
+      bounds: { x: number; y: number; width: number; height: number },
+    ) => Promise<{ success: boolean; error?: string }>
+    setBounds: (
+      panelId: string,
+      bounds: { x: number; y: number; width: number; height: number },
+    ) => Promise<void>
+    setVisible: (panelId: string, visible: boolean) => Promise<void>
+    kill: (panelId: string) => Promise<void>
+    toggleLoupe: (panelId: string) => Promise<number | null>
+    onStateChanged: (
+      callback: (data: { panelId: string; state: 'starting' | 'running' | 'exited' | 'error'; detail?: string }) => void,
+    ) => () => void
+  }
+
+  // 共享置顶弹层窗口
+  overlay: {
+    hello: () => void
+    onSnapshot: (callback: (msg: { seq: number; slice: unknown }) => void) => () => void
+    pushSnapshot: (msg: { seq: number; slice: unknown }) => void
+    setVisibility: (v: { visible: boolean; mode: 'modal' | 'menu' }) => void
+    mainReady: () => void
+    onPushNow: (callback: () => void) => () => void
+    action: (req: { reqId: string; name: string; args: unknown[] }) =>
+      Promise<{ reqId: string; ok: boolean; value?: unknown; error?: string }>
+    onActionRequest: (callback: (req: { reqId: string; name: string; args: unknown[] }) => void) => () => void
+    actionResponse: (res: { reqId: string; ok: boolean; value?: unknown; error?: string }) => void
+    callback: (req: { reqId: string; token: string; args: unknown[] }) =>
+      Promise<{ reqId: string; ok: boolean; value?: unknown; error?: string }>
+    onCallbackRequest: (callback: (req: { reqId: string; token: string; args: unknown[] }) => void) => () => void
+    callbackResponse: (res: { reqId: string; ok: boolean; value?: unknown; error?: string }) => void
+    callbackRev: (req: { reqId: string; token: string; args: unknown[] }) =>
+      Promise<{ reqId: string; ok: boolean; value?: unknown; error?: string }>
+    onCallbackRevRequest: (callback: (req: { reqId: string; token: string; args: unknown[] }) => void) => () => void
+    callbackRevResponse: (res: { reqId: string; ok: boolean; value?: unknown; error?: string }) => void
+    sendEvent: (msg: { name: string; detail?: unknown; from: 'main' | 'overlay' }) => void
+    onEvent: (callback: (msg: { name: string; detail?: unknown; from: 'main' | 'overlay' }) => void) => () => void
+  }
+
   // 路径检查
   path: {
     exists: (path: string) => Promise<{ exists: boolean; path: string }>
@@ -293,6 +341,8 @@ export interface ElectronAPI {
   closeWindow: () => void
   isMaximized: () => Promise<boolean>
   onMaximizedChanged: (callback: (isMaximized: boolean) => void) => () => void
+  /** 监听面板焦点方向切换请求（浏览器标签内按 Alt+方向键时由主进程转发） */
+  onPanelNav: (callback: (direction: 'left' | 'right' | 'up' | 'down') => void) => () => void
 
   // 操作记录
   operation: {

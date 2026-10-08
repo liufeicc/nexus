@@ -11,6 +11,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '../../store'
 import { getBasename, getDirname } from '../../../core/utils/path-utils'
 import { useI18n } from '../../i18n'
+import { emitBridgeEvent } from '../../overlay/overlay-utils'
 
 /**
  * 文件重命名对话框
@@ -81,11 +82,9 @@ export function FileRenameModal() {
         showToast(errorMap[result.error] || result.error)
         return
       }
-      // 通知对应面板刷新目录
+      // 通知对应面板刷新目录（跨窗口中继到主窗口）
       if (fileRenameModal.panelId) {
-        window.dispatchEvent(new CustomEvent('file-rename-completed', {
-          detail: { panelId: fileRenameModal.panelId, oldPath, newPath },
-        }))
+        emitBridgeEvent('file-rename-completed', { panelId: fileRenameModal.panelId, oldPath, newPath })
       }
       showToast(t('fileRename.confirm'))
       hideFileRenameModal()

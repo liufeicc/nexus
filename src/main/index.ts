@@ -43,6 +43,7 @@ if (!fs.existsSync(plansDir)) {
 import { WindowManager } from './windows/window-manager'
 import { OnboardingWindowManager } from './windows/onboarding-window-manager'
 import { DynamicIslandManager } from './windows/dynamic-island-manager'
+import { OverlayWindowManager } from './windows/overlay-window-manager'
 import { registerIpcHandlers, setMainWindow, unregisterIpcHandlers } from './ipc/ipc-handlers'
 import { markQuitting } from './ipc/handlers/file-watcher'
 import { setDynamicIslandManager } from './ipc/handlers/config'
@@ -51,6 +52,7 @@ import { DatabaseService } from './services/database.service'
 import { PtyService } from './services/pty.service'
 import { BrowserViewService } from './services/browser-view.service'
 import { UpdateService } from './services/update-service'
+import { AppPanelService } from './services/app-panel/app-panel.service'
 import { installBundledSkills } from './utils/skill-installer'
 
 // 导入日志工具
@@ -63,6 +65,8 @@ let windowManager: WindowManager | null = null
 let onboardingWindowManager: OnboardingWindowManager | null = null
 // 全局灵动岛窗口管理器实例
 let dynamicIslandManager: DynamicIslandManager | null = null
+// 全局共享置顶弹层窗口管理器实例
+let overlayWindowManager: OverlayWindowManager | null = null
 // 标记是否正在创建主窗口（防止重复创建）
 let isCreatingMainWindow = false
 
@@ -124,6 +128,10 @@ async function initializeWindowServices(window: BrowserWindow) {
   dynamicIslandManager.registerIpcHandlers()
   // 将灵动岛管理器引用传递给配置处理器，以便发送语言变更通知
   setDynamicIslandManager(dynamicIslandManager)
+
+  // 创建共享置顶弹层窗口（承载所有 DOM 弹层，浮于原生层之上）
+  overlayWindowManager = new OverlayWindowManager()
+  overlayWindowManager.createOverlayWindow(window)
 }
 
 /**
@@ -268,6 +276,19 @@ app.on('before-quit', async (event) => {
 })
 
 /**
+ * 强杀信号兜底（pkill / Ctrl+C / 终端关闭）：
+ * 此类信号不触发 window-all-closed / before-quit，若不清理，
+ * detached 的 Xephyr/目标程序会泄漏并持有单实例应用的工作区锁。
+ * 此处尽力清理嵌入会话后立即退出。
+ */
+for (const sig of ['SIGINT', 'SIGHUP', 'SIGTERM'] as const) {
+  process.on(sig, () => {
+    try { AppPanelService.getInstance().dispose() } catch { /* 忽略 */ }
+    process.exit(0)
+  })
+}
+
+/**
  * 清理资源
  */
 function cleanup() {
@@ -284,6 +305,12 @@ function cleanup() {
     dynamicIslandManager = null
   }
 
+  // 清理共享置顶弹层窗口
+  if (overlayWindowManager) {
+    overlayWindowManager.destroy()
+    overlayWindowManager = null
+  }
+
   // 清理引导窗口
   if (onboardingWindowManager) {
     onboardingWindowManager.closeWithoutOnboarding()
@@ -294,6 +321,9 @@ function cleanup() {
   if (windowManager?.getMainWindow() && !windowManager.getMainWindow()?.isDestroyed()) {
     saveWindowState(windowManager.getMainWindow()!)
   }
+
+  // 销毁所有应用面板嵌入会话（须在窗口销毁前执行 X 操作）
+  AppPanelService.getInstance().dispose()
 
   // 销毁所有 PTY 进程
   PtyService.getInstance().dispose()

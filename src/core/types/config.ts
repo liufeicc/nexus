@@ -49,6 +49,8 @@ export interface ThemeConfig {
 export interface ConfigValueMap {
   theme: ThemeConfig
   commonPaths: CommonPathItem[]
+  /** 应用选择浮层置顶的应用 ID 列表（按置顶先后排序，持久化） */
+  pinnedApps: string[]
   windowState: WindowStateConfig
   terminalConfig: TerminalConfig
   sidebarWidth: number

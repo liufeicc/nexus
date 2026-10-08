@@ -57,6 +57,17 @@
     "maintainer": "liufei",
     "executableName": "nexus"
   },
+  "deb": {
+    "depends": [
+      "xserver-xephyr",
+      "gcc",
+      "libx11-dev",
+      "libxrandr-dev",
+      "libxrender-dev",
+      "libxcomposite-dev",
+      "libxtst-dev"
+    ]
+  },
   "mac": {
     "target": [
       {

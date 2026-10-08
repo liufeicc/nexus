@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useCallback, useState } from 'react'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
 import { useI18n } from '../../i18n'
 
 export function ApprovalModal() {
@@ -19,13 +19,10 @@ export function ApprovalModal() {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const { t } = useI18n()
 
-  // 弹窗打开时截图占位
+  // 关闭时重置高级选项状态
   useEffect(() => {
-    if (approvalModal?.visible) {
-      captureAllBrowsersBeforeModal()
-    } else {
-      clearAllBrowserSnapshots()
-      setShowAdvanced(false) // 关闭时重置高级选项状态
+    if (!approvalModal?.visible) {
+      setShowAdvanced(false)
     }
   }, [approvalModal?.visible])
 

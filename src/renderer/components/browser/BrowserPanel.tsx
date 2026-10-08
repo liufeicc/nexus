@@ -186,8 +186,7 @@ export function BrowserPanel({ panelId, initialUrl = 'about:blank' }: BrowserPan
       setNexusBrowserPanelId(null)
       showToast(t('filePanel.disconnectNexus'), 1500)
     } else {
-      // === 连接：先截图隐藏 WebContentsView，再弹出确认框 ===
-      await captureAllBrowsersBeforeModal()
+      // === 连接：确认框已迁移至 overlay 置顶窗口，无需截图让路 ===
       showConfirmModal(
         t('filePanel.nexusConnectConfirmTitle'),
         t('filePanel.nexusConnectConfirmMsg'),

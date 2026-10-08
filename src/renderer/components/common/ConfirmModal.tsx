@@ -3,8 +3,9 @@
  */
 
 import React from 'react'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
 import { useI18n } from '../../i18n'
+import { callMaybeCallback } from '../../overlay/overlay-utils'
 
 /**
  * 确认对话框
@@ -12,15 +13,6 @@ import { useI18n } from '../../i18n'
 export function ConfirmModal() {
   const { confirmModal, hideConfirmModal } = useAppStore()
   const { t } = useI18n()
-
-  // 弹窗打开时截图占位
-  React.useEffect(() => {
-    if (confirmModal?.visible) {
-      captureAllBrowsersBeforeModal()
-    } else {
-      clearAllBrowserSnapshots()
-    }
-  }, [confirmModal?.visible])
 
   // 键盘事件: Enter 确认, Esc 取消
   React.useEffect(() => {
@@ -43,7 +35,8 @@ export function ConfirmModal() {
   }
 
   const handleConfirm = () => {
-    confirmModal.onConfirm?.()
+    // onConfirm 在 overlay 窗口内为 token 对象，经 IPC 回主窗口执行真实闭包
+    callMaybeCallback(confirmModal.onConfirm)
     hideConfirmModal()
   }
 

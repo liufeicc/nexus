@@ -7,11 +7,11 @@ import { useAppStore } from '../../store'
 import { useI18n } from '../../i18n'
 
 export function Toolbar() {
-  const { activePanelId, activeSessionId, showPathSelectorModal, showConfirmModal, showAlertModal, createPanel, splitPanelWithPty, closePanel, createFilePanel, splitPanelWithFilePanel, createBrowserPanel, splitPanelWithBrowserPanel, setNexusProfileModalVisible } = useAppStore()
+  const { activePanelId, activeSessionId, showPathSelectorModal, showConfirmModal, showAlertModal, createPanel, splitPanelWithPty, closePanel, createFilePanel, splitPanelWithFilePanel, createBrowserPanel, splitPanelWithBrowserPanel, setNexusProfileModalVisible, setAppPickerVisible, splitMode, setSplitMode } = useAppStore()
   const { t } = useI18n()
 
   // 分屏模式：horizontal = 左右分屏，vertical = 上下分屏
-  const [splitMode, setSplitMode] = React.useState<'horizontal' | 'vertical'>('horizontal')
+  // 分屏模式全局共享（应用面板选择也按此模式分屏）
 
   // 检查是否有选中的面板
   const hasSelectedPanel = !!activePanelId
@@ -90,6 +90,26 @@ export function Toolbar() {
     } catch (error) {
       console.error('[Toolbar] 创建浏览器面板失败:', error)
     }
+  }
+
+  // 打开应用选择浮层（虚拟显示器嵌入）
+  const handleAddAppPanel = async () => {
+    if (!activeSessionId) {
+      console.warn('[Toolbar] 没有活动会话，无法创建应用面板')
+      showAlertModal(t('toolbar.noActiveSession'), t('toolbar.noActiveSession'))
+      return
+    }
+    try {
+      const support = await window.electronAPI.appPanel.supported()
+      if (!support.available) {
+        showAlertModal(t('appPanel.unsupported'), support.reason || t('appPanel.unsupported'))
+        return
+      }
+    } catch {
+      showAlertModal(t('appPanel.unsupported'), t('appPanel.unsupported'))
+      return
+    }
+    setAppPickerVisible(true)
   }
 
   // 关闭面板
@@ -206,6 +226,22 @@ export function Toolbar() {
       >
         <svg className="icon" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+      </button>
+
+      {/* 新建应用面板按钮（虚拟显示器嵌入） */}
+      <button
+        className="toolbar-btn"
+        title={t('toolbar.newApp')}
+        onClick={handleAddAppPanel}
+        disabled={!activeSessionId}
+        style={{
+          opacity: activeSessionId ? 1 : 0.5,
+          cursor: activeSessionId ? 'pointer' : 'not-allowed',
+        }}
+      >
+        <svg className="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/>
         </svg>
       </button>
 

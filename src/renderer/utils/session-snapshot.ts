@@ -39,6 +39,8 @@ export async function restoreSessionPanels(sessionId: string): Promise<void> {
       rootPath: ps.rootPath,
       currentPath: ps.currentPath,
       viewMode: ps.viewMode,
+      appCommand: ps.appCommand,
+      appName: ps.appName,
       title: ps.title || `${t('panel.terminal')} - ${ps.cwd}`,
     }))
     await useAppStore.getState().restorePanelsFromData(panelStates, snapshot.layoutData || null)

@@ -2,6 +2,15 @@
  * 右键菜单样式
  */
 
+/* 全屏透明捕获层：菜单打开时铺满 overlay 窗口，
+   菜单外点击/右键落在该层上关闭菜单（Linux 无命中测试穿透） */
+.context-menu-capture {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: transparent;
+}
+
 .context-menu {
   position: absolute;
   background-color: var(--bg-secondary);

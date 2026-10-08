@@ -48,6 +48,8 @@ export const IPC_CHANNELS = {
   WINDOW_IS_MAXIMIZED: 'window:is-maximized',
   WINDOW_CLOSE: 'window:close',
   WINDOW_MAXIMIZED_CHANGED: 'window:maximized-changed',
+  // 面板焦点方向切换：主进程在原生视图（浏览器标签）内捕获 Alt+方向键后转发给渲染进程
+  WINDOW_PANEL_NAV: 'window:panel-nav',
 
   // 应用管理
   APP_GET_PATH: 'app:get-path',
@@ -220,6 +222,17 @@ export const IPC_CHANNELS = {
   NEXUS_PROFILE_WRITE: 'nexus-profile:write',    // 写入指定目录的 NEXUS.md
   NEXUS_PROFILE_EXISTS: 'nexus-profile:exists',  // 检查是否存在
   NEXUS_PROFILE_GENERATE: 'nexus-profile:generate', // 自动生成目录说明
+
+  // 应用面板（虚拟显示器嵌入）
+  APP_PANEL_SUPPORTED: 'app-panel:supported',            // 查询当前环境是否支持
+  APP_PANEL_LIST_APPS: 'app-panel:list-apps',            // 列出已安装桌面程序（.desktop 扫描）
+  APP_PANEL_GET_ICON: 'app-panel:get-icon',              // 按 appId 懒加载图标 dataURL
+  APP_PANEL_LAUNCH: 'app-panel:launch',                  // 启动虚拟显示器 + 目标程序
+  APP_PANEL_SET_BOUNDS: 'app-panel:set-bounds',          // 同步面板几何
+  APP_PANEL_SET_VISIBLE: 'app-panel:set-visible',        // 显示/隐藏
+  APP_PANEL_KILL: 'app-panel:kill',                      // 关闭面板（杀程序与 Xephyr）
+  APP_PANEL_TOGGLE_LOUPE: 'app-panel:toggle-loupe',      // 切换放大镜（与面板内中键等效）
+  APP_PANEL_STATE_CHANGED: 'app-panel:state-changed',    // 主进程 → 渲染进程：状态推送
 } as const
 
 export type IPCChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS]

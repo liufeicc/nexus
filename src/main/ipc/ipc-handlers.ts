@@ -29,6 +29,8 @@ import { registerNexusHandlers } from './handlers/nexus'
 import { registerInputHistoryHandlers } from './handlers/input-history'
 import { registerUpdateHandlers } from './handlers/update'
 import { registerNexusProfileHandlers } from './handlers/nexus-profile'
+import { registerAppPanelHandlers } from './handlers/app-panel'
+import { AppPanelService } from '../services/app-panel/app-panel.service'
 import { TaskManager } from '../agent/tasks/task-manager'
 import { SkillManager } from '../agent/skills/skill-manager'
 import { DatabaseService } from '../services/database.service'
@@ -67,6 +69,8 @@ const NON_HANDLE_CHANNELS: Set<string> = new Set([
   // 自动更新事件（webContents.send）
   IPC_CHANNELS.UPDATE_STATE,
   IPC_CHANNELS.UPDATE_ERROR,
+  // 应用面板状态推送（webContents.send）
+  IPC_CHANNELS.APP_PANEL_STATE_CHANGED,
 ])
 
 let mainWindow: BrowserWindow | null = null
@@ -80,6 +84,7 @@ export function setMainWindow(window: BrowserWindow): void {
   mainWindow = window
   PtyService.getInstance().setMainWindow(window)
   NexusConnectionManager.getInstance().setMainWindow(window)
+  AppPanelService.getInstance().setMainWindow(window)
   BrowserViewService.getInstance()
 
   // 监听窗口最大化/还原事件，通知渲染进程
@@ -127,6 +132,9 @@ export function registerIpcHandlers(): void {
 
   // ===== 目录档案 NEXUS.md =====
   registerNexusProfileHandlers()
+
+  // ===== 应用面板（虚拟显示器嵌入，技术验证） =====
+  registerAppPanelHandlers()
 
   // ===== Task 管理 =====
   let taskManager: TaskManager | null = null

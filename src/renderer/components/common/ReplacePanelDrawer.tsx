@@ -84,19 +84,11 @@ export function ReplacePanelDrawer({ panelId, anchorEl, onClose }: ReplacePanelD
     }
   }, [onClose, anchorEl])
 
-  // 清理旧 PTY
-  const killOldPty = () => {
-    const panel = panels.find(p => p.id === panelId)
-    if (panel?.panelType === 'terminal' && panel.ptyId) {
-      try { window.electronAPI.pty.kill(panel.ptyId) } catch {}
-    }
-  }
-
   // 替换为终端面板
+  // 旧面板资源（PTY / 应用）由 replacePanelInPlace 统一清理
   const handleReplaceTerminal = async () => {
     const panel = panels.find(p => p.id === panelId)
     if (!panel) return
-    killOldPty()
 
     showPathSelectorModal(async (selectedPath) => {
       try {
@@ -127,7 +119,6 @@ export function ReplacePanelDrawer({ panelId, anchorEl, onClose }: ReplacePanelD
   const handleReplaceFile = () => {
     const panel = panels.find(p => p.id === panelId)
     if (!panel) return
-    killOldPty()
 
     showPathSelectorModal((selectedPath) => {
       replacePanelInPlace(panelId, {
@@ -147,7 +138,6 @@ export function ReplacePanelDrawer({ panelId, anchorEl, onClose }: ReplacePanelD
   const handleReplaceBrowser = async () => {
     const panel = panels.find(p => p.id === panelId)
     if (!panel) return
-    killOldPty()
 
     let resolvedUrl = 'about:blank'
     try {

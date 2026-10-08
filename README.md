@@ -204,6 +204,7 @@ When the agent executes potentially risky commands, an approval dialog appears:
 |----------|--------|-------------|
 | `Escape` | Close modal | Close settings, confirm, rename dialogs |
 | `Ctrl + Tab` | Next panel | Switch focus between workspace panels |
+| `Alt + ← / → / ↑ / ↓` | Focus panel by direction | Move focus to the adjacent panel in that direction; no-op at the layout edge |
 | `Ctrl + C` | Copy | Copy selected text in terminal; copy file in browser |
 | `Ctrl + V` | Paste | Paste clipboard in terminal; paste file in browser |
 | `Ctrl + T` | New session | Create a new work session |

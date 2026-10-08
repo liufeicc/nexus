@@ -17,6 +17,7 @@
 @import './file-panel.css';
 @import './file-viewer.css';
 @import './replace-panel.css';
+@import './app-panel.css';
 @import './hud-approval.css';
 @import './hud-clarify.css';
 @import './error-boundary.css';

@@ -16,11 +16,14 @@ import { fs } from './preload/fs-api'
 import { browser } from './preload/browser-api'
 import { agent } from './preload/agent-api'
 import { nexus, dynamicIsland } from './preload/nexus-api'
+import { appPanel } from './preload/app-panel-api'
+import { overlay } from './preload/overlay-api'
 import {
   app, platform, clipboard, path,
   showPathSelector,
   minimizeWindow, maximizeWindow, unmaximizeWindow, closeWindow,
   isMaximized, onMaximizedChanged,
+  onPanelNav,
   operation, fileAttachment,
   task, skill, inputHistory, memory, update, nexusProfile,
   onboardingComplete, onboardingSkip,
@@ -48,6 +51,8 @@ const electronAPI = {
   closeWindow,
   isMaximized,
   onMaximizedChanged,
+  // 面板焦点方向切换（浏览器标签内 Alt+方向键 → 主窗口）
+  onPanelNav,
   // 智能体
   agent,
   // 文件附件
@@ -70,6 +75,10 @@ const electronAPI = {
   update,
   // 目录档案
   nexusProfile,
+  // 应用面板（虚拟显示器嵌入，技术验证）
+  appPanel,
+  // 共享置顶弹层窗口
+  overlay,
   // 全局事件
   onConfigChanged,
   onSaveOnExit,

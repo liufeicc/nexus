@@ -6,6 +6,7 @@
  */
 
 import { simplifyLayout, cleanupLayoutFlexValues, removePanelFromLayout, splitPanelLayout, swapPanelsInLayout, updateLayoutFlexAtPath } from './layout-ops'
+import { killPanelResources } from './panel-resources'
 import { isValidPanelId } from '@core/utils/panel-id'
 import { getBasename } from '@core/utils/path-utils'
 import type { AppState, PanelState, LayoutTree } from './types'
@@ -76,14 +77,32 @@ export function createSimpleActions(set: SetFn, get: GetFn): Partial<AppState> {
 
     setSessionIds: (ids: string[]) => set({ sessionIds: ids }),
 
-    deleteSessionCache: (sessionId: string) =>
+    deleteSessionCache: (sessionId: string) => {
+      // 删除会话前先清理其面板持有的外部资源（review 0.6.11 I-4）：
+      // 否则被删会话中的应用面板（Xephyr + 程序 + :N 显示器 + 桥接缩放会话）
+      // 与终端面板的 PTY 全部成为孤儿进程，直到 Nexus 退出才释放。
+      // 面板集合需查两处：非激活会话的面板在 sessionsPanels 缓存中
+      // （切换走后会话的应用按设计保活）；若被删的恰是当前激活会话，
+      // 其面板在 state.panels 中。同一 panelId 可能两处都有（缓存为切换走
+      // 时的快照），按 id 去重且活跃状态优先，主进程 kill 幂等不会误杀。
+      const state = get()
+      const livePanels = state.activeSessionId === sessionId ? state.panels : []
+      const cachedPanels = state.sessionsPanels.get(sessionId) || []
+      const seen = new Set<string>()
+      for (const panel of [...livePanels, ...cachedPanels]) {
+        if (seen.has(panel.id)) continue
+        seen.add(panel.id)
+        killPanelResources(panel)
+      }
+
       set((state) => {
         const newPanels = new Map(state.sessionsPanels)
         const newLayouts = new Map(state.sessionsLayouts)
         newPanels.delete(sessionId)
         newLayouts.delete(sessionId)
         return { sessionsPanels: newPanels, sessionsLayouts: newLayouts }
-      }),
+      })
+    },
 
     setSidebarWidth: (width: number) => set({ sidebarWidth: width }),
     setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed }),
@@ -96,7 +115,18 @@ export function createSimpleActions(set: SetFn, get: GetFn): Partial<AppState> {
 
     setSettingsModalVisible: (visible: boolean) => set({ settingsModalVisible: visible }),
     setAboutModalVisible: (visible: boolean) => set({ aboutModalVisible: visible }),
+
+    // 应用选择浮层：visible + 可选的"替换目标面板" + 可选的"分屏目标"
+    setAppPickerVisible: (
+      visible: boolean,
+      replacePanelId: string | null = null,
+      split: { panelId: string; direction: 'horizontal' | 'vertical' } | null = null,
+    ) =>
+      set({ appPicker: { visible, replacePanelId, split } }),
+
     setNexusProfileModalVisible: (visible: boolean) => set({ nexusProfileModal: { visible } }),
+    setDomPopupOpen: (open: boolean) => set({ domPopupOpen: open }),
+    setSplitMode: (mode: 'horizontal' | 'vertical') => set({ splitMode: mode }),
 
     addPanel: (panel: PanelState) => set((state) => {
       if (!isValidPanelId(panel.id)) {

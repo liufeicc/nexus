@@ -197,6 +197,9 @@
 
 .common-paths-list {
   padding: 8px 0;
+  /* 约可容纳 9 条路径，超出后向下滚动（上限 100 条） */
+  max-height: 360px;
+  overflow-y: auto;
 }
 
 .common-path-item {

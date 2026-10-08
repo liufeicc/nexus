@@ -6,6 +6,7 @@
 
 import React, { useLayoutEffect, useRef } from 'react'
 import { useAppStore } from '../../store'
+import { emitBridgeEvent } from '../../overlay/overlay-utils'
 import type { Session } from '@core/types'
 import type { FileBrowserPanel, TerminalPanel } from '../../store/types'
 import { getBasename, getParentDir, joinPath } from '../../../core/utils/path-utils'
@@ -13,7 +14,7 @@ import { buildContextMenu } from './context-menu-config'
 import { useI18n } from '../../i18n'
 
 export function ContextMenu() {
-  const { contextMenu, hideContextMenu, showRenameModal, showConfirmModal, setActiveSessionId, setSessionIds, deleteSessionCache, activeSessionId, activePanelId, panels, splitPanelWithPty, closePanel, showPathSelectorModal, createPanel, createFilePanel, splitPanelWithFilePanel, fileClipboard, setFileClipboard, showToast, selectedFilePaths, createBrowserPanel, splitPanelWithBrowserPanel, replacePanelInPlace } = useAppStore()
+  const { contextMenu, hideContextMenu, showRenameModal, showConfirmModal, setActiveSessionId, setSessionIds, deleteSessionCache, activeSessionId, activePanelId, panels, splitPanelWithPty, closePanel, showPathSelectorModal, createPanel, createFilePanel, splitPanelWithFilePanel, fileClipboard, setFileClipboard, showToast, selectedFilePaths, createBrowserPanel, splitPanelWithBrowserPanel, replacePanelInPlace, setAppPickerVisible } = useAppStore()
   const { t } = useI18n()
   const [allSessions, setAllSessions] = React.useState<Session[]>([])
   const [clipboardText, setClipboardText] = React.useState('')
@@ -26,7 +27,7 @@ export function ContextMenu() {
       const sessions = await window.electronAPI.session.list()
       setAllSessions(sessions)
       setSessionIds(sessions.map((s: Session) => s.id))
-      window.dispatchEvent(new CustomEvent('sessions-change'))
+      emitBridgeEvent('sessions-change')
     } catch (error) {
       console.error('[ContextMenu] 加载会话列表失败:', error)
     }
@@ -115,8 +116,7 @@ export function ContextMenu() {
             showToast(t('fileOps.copyToast').replace('{n}', String(paths.size)), 1500)
           }
         } else {
-          const copyEvent = new CustomEvent('terminal-copy', { detail: { panelId: contextMenu.selectedPanelId } })
-          window.dispatchEvent(copyEvent)
+          emitBridgeEvent('terminal-copy', { panelId: contextMenu.selectedPanelId })
         }
         break
       }
@@ -131,9 +131,7 @@ export function ContextMenu() {
           if (isViewingFile && clipboardText) {
             // 尝试触发编辑器的粘贴（需要聚焦编辑器）
             // 这里简单地将剪贴板文本发送到编辑器
-            window.dispatchEvent(new CustomEvent('file-viewer-paste-text', {
-              detail: { text: clipboardText }
-            }))
+            emitBridgeEvent('file-viewer-paste-text', { text: clipboardText })
           } else {
             // 文件面板：粘贴文件
             if (!fileClipboard || fileClipboard.paths.length === 0) {
@@ -146,16 +144,14 @@ export function ContextMenu() {
               }
             }
             if (!panel.currentPath) return
-            window.dispatchEvent(new CustomEvent('file-paste-request', {
-              detail: { panelId: contextMenu.selectedPanelId, targetDir: panel.currentPath },
-            }))
+            emitBridgeEvent('file-paste-request', { panelId: contextMenu.selectedPanelId, targetDir: panel.currentPath })
           }
         } else {
           // 终端面板：粘贴文本
           const text = await window.electronAPI.clipboard.readText()
           if (text && (panel as TerminalPanel)?.ptyId) {
             await window.electronAPI.pty.write((panel as TerminalPanel).ptyId, text)
-            window.dispatchEvent(new CustomEvent('terminal-paste', { detail: { panelId: contextMenu.selectedPanelId } }))
+            emitBridgeEvent('terminal-paste', { panelId: contextMenu.selectedPanelId })
           }
         }
         break
@@ -204,9 +200,7 @@ export function ContextMenu() {
 
           if (selectedText) {
             // 文件查看器中有文本选中：触发 CodeMirror 的剪切（调用内置 cut 命令）
-            window.dispatchEvent(new CustomEvent('file-viewer-cut', {
-              detail: { panelId: pid }
-            }))
+            emitBridgeEvent('file-viewer-cut', { panelId: pid })
           } else {
             // 否则剪切文件
             const paths = selectedFilePaths.get(pid) ?? new Set()
@@ -221,9 +215,7 @@ export function ContextMenu() {
         if (!fileClipboard || fileClipboard.paths.length === 0) return
         const panel = panels.find(p => p.id === contextMenu?.selectedPanelId)
         if (!panel || panel.panelType !== 'file-browser' || !panel.currentPath) return
-        window.dispatchEvent(new CustomEvent('file-paste-request', {
-          detail: { panelId: contextMenu.selectedPanelId, targetDir: panel.currentPath },
-        }))
+        emitBridgeEvent('file-paste-request', { panelId: contextMenu.selectedPanelId, targetDir: panel.currentPath })
         break
       }
       case 'trash-file': {
@@ -235,7 +227,7 @@ export function ContextMenu() {
             const result = await window.electronAPI.fs.trashItem(Array.from(paths))
             if (result.successCount > 0) showToast(t('fileOps.moveToTrashSuccess').replace('{n}', String(result.successCount)), 2000)
             if (result.errorCount > 0) console.error('[ContextMenu] 部分删除失败:', result.errors)
-            window.dispatchEvent(new CustomEvent('files-trashed', { detail: { paths: Array.from(paths) } }))
+            emitBridgeEvent('files-trashed', { paths: Array.from(paths) })
           } catch (error) {
             console.error('[ContextMenu] 删除文件失败:', error)
             showToast(t('fileOps.deleteError'), 2000)
@@ -319,6 +311,18 @@ export function ContextMenu() {
         }
         break
       }
+      case 'split-horizontal-app':
+      case 'split-vertical-app': {
+        // 打开应用选择器，选中后按指定方向对目标面板分屏
+        const direction = actionId.includes('horizontal') ? 'horizontal' : 'vertical'
+        const targetPanelId = contextMenu.selectedPanelId ?? activePanelId
+        if (targetPanelId) setAppPickerVisible(true, null, { panelId: targetPanelId, direction })
+        break
+      }
+      case 'replace-app': {
+        if (contextMenu.selectedPanelId) setAppPickerVisible(true, contextMenu.selectedPanelId)
+        break
+      }
       case 'replace-terminal': {
         const targetPanelId = contextMenu.selectedPanelId
         if (!targetPanelId) return
@@ -331,7 +335,7 @@ export function ContextMenu() {
               shell: window.electronAPI.platform.isWindows ? 'powershell.exe' : undefined,
             })
             if (!ptyId) { showToast(t('toast.createTerminalFailed')); return }
-            if (panel.panelType === 'terminal' && panel.ptyId) { try { window.electronAPI.pty.kill(panel.ptyId) } catch {} }
+            // 旧面板资源（PTY / 应用）由 replacePanelInPlace 统一清理
             replacePanelInPlace(targetPanelId, {
               panelType: 'terminal', ptyId, cwd: selectedPath,
               title: t('panel.terminal') + ' - ' + getBasename(selectedPath),
@@ -350,7 +354,6 @@ export function ContextMenu() {
         const panel = panels.find(p => p.id === targetPanelId)
         if (!panel) return
         showPathSelectorModal((selectedPath) => {
-          if (panel.panelType === 'terminal' && panel.ptyId) { try { window.electronAPI.pty.kill(panel.ptyId) } catch {} }
           replacePanelInPlace(targetPanelId, {
             panelType: 'file-browser', rootPath: selectedPath, currentPath: selectedPath,
             openFiles: [], activeFile: null,
@@ -372,7 +375,6 @@ export function ContextMenu() {
             if (defaultUrl && typeof defaultUrl === 'string' && defaultUrl.trim()) resolvedUrl = defaultUrl.trim()
           } catch {}
           const initialTabId = `tab-${Date.now()}-init`
-          if (panel.panelType === 'terminal' && panel.ptyId) { try { window.electronAPI.pty.kill(panel.ptyId) } catch {} }
           replacePanelInPlace(targetPanelId, {
             panelType: 'browser', title: t('panel.browser'),
             browserTabs: new Map([[initialTabId, { id: initialTabId, url: resolvedUrl, title: t('panel.newTab'), isLoading: false }]]),
@@ -468,14 +470,26 @@ export function ContextMenu() {
   }
 
   return (
-    <div
-      ref={menuRef}
-      className="context-menu"
-      style={{ top: contextMenu.y, left: contextMenu.x, position: 'fixed', zIndex: 1000 }}
-      onClick={(e) => { e.stopPropagation(); hideContextMenu() }}
-    >
-      {menuItems.map(renderMenuItem)}
-    </div>
+    <>
+      {/* 全屏透明捕获层：overlay 显示期间接管点击，菜单外左键关闭；
+          菜单外右键则把坐标回传主窗口重新命中，在新位置重开菜单 */}
+      <div
+        className="context-menu-capture"
+        onMouseDown={() => hideContextMenu()}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          emitBridgeEvent('overlay-ctx-redispatch', { x: e.clientX, y: e.clientY })
+        }}
+      />
+      <div
+        ref={menuRef}
+        className="context-menu"
+        style={{ top: contextMenu.y, left: contextMenu.x, position: 'fixed', zIndex: 1000 }}
+        onClick={(e) => { e.stopPropagation(); hideContextMenu() }}
+      >
+        {menuItems.map(renderMenuItem)}
+      </div>
+    </>
   )
 }
 

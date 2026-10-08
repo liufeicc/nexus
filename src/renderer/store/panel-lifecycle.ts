@@ -8,7 +8,8 @@
 import type { LayoutTree, BrowserTab } from '@core/types'
 import { generatePanelId } from '@core/utils/panel-id'
 import { cleanupLayoutFlexValues } from './layout-ops'
-import type { AppState, PanelState, OpenFileEntry, PanelType, BrowserPanel, TerminalPanel, FileBrowserPanel } from './types'
+import type { AppState, PanelState, OpenFileEntry, PanelType, BrowserPanel, TerminalPanel, FileBrowserPanel, AppPanel } from './types'
+import { killPanelResources } from './panel-resources'
 import { t } from '../i18n'
 import { getBasename } from '../../core/utils/path-utils'
 
@@ -155,9 +156,9 @@ export function createPanelLifecycleActions(set: SetFn, get: GetFn): Partial<App
       const panel = state.panels.find((p) => p.id === panelId)
       if (!panel) return
 
-      if (panel.panelType === 'terminal' && panel.ptyId) {
-        await window.electronAPI.pty.kill(panel.ptyId)
-      }
+      // 清理面板持有的外部资源（终端杀 PTY、应用杀程序与虚拟显示器），
+      // 统一走 killPanelResources 收口（与替换面板、删除会话同一路径）
+      killPanelResources(panel)
       get().removePanel(panelId)
       if (state.activeSessionId !== null) {
         await get().saveSnapshot(state.activeSessionId)
@@ -169,11 +170,27 @@ export function createPanelLifecycleActions(set: SetFn, get: GetFn): Partial<App
         panelId: string; cwd?: string; title: string; panelType?: string;
         rootPath?: string; currentPath?: string; viewMode?: 'grid' | 'list';
         url?: string; browserTabs?: BrowserTab[]; activeTabId?: string;
+        appCommand?: string; appName?: string;
       }>,
       layout: LayoutTree | null = null
     ) => {
       const newPanels: PanelState[] = []
       for (const ps of panelStates) {
+        // 应用面板：恢复为"待启动"态，由组件挂载后自动拉起虚拟显示器
+        if (ps.panelType === 'app') {
+          newPanels.push({
+            id: ps.panelId,
+            panelType: 'app',
+            title: ps.title || panelTitle('appPanel', ps.appName || ''),
+            appCommand: ps.appCommand || '',
+            appName: ps.appName || '',
+            // 快照缺少应用信息（旧版本快照）时不自动拉起，提示用户重新选择
+            appRunState: ps.appCommand ? 'starting' : 'error',
+            appRunDetail: ps.appCommand ? undefined : '快照缺少应用信息，请关闭后重新选择应用',
+          })
+          continue
+        }
+
         if (ps.panelType === 'file-browser') {
           newPanels.push({
             id: ps.panelId,
@@ -501,7 +518,19 @@ export function createPanelLifecycleActions(set: SetFn, get: GetFn): Partial<App
       activeFile?: string | null
       browserTabs?: Map<string, BrowserTab>
       activeTabId?: string | null
-    }) => set((state: AppState) => {
+      appCommand?: string
+      appName?: string
+    }) => {
+      // 替换前先清理旧面板持有的外部资源，避免进程泄漏：
+      // - 终端面板 → 杀 PTY；应用面板 → 杀程序与虚拟显示器（Xephyr + 桥接会话）
+      // 统一收口在 killPanelResources：所有替换入口（标题栏图标条 / 抽屉 / 右键菜单 /
+      // 应用选择浮层替换模式 / overlay 代理）最终都经过本 action，各组件不再各自写清理逻辑。
+      // 主进程 kill 会同步先摘除会话记录，随后才做异步 X 资源销毁，
+      // 因此 app→app 替换时后续 launch 不会与旧会话冲突。
+      const oldPanel = get().panels.find(p => p.id === panelId)
+      if (oldPanel) killPanelResources(oldPanel)
+
+      set((state: AppState) => {
       const panel = state.panels.find(p => p.id === panelId)
       if (!panel) return state
 
@@ -512,9 +541,27 @@ export function createPanelLifecycleActions(set: SetFn, get: GetFn): Partial<App
         ...(updates.panelType === 'terminal' && { ptyId: updates.ptyId, cwd: updates.cwd }),
         ...(updates.panelType === 'file-browser' && { rootPath: updates.rootPath, currentPath: updates.currentPath, viewMode: updates.viewMode || 'grid', openFiles: updates.openFiles, activeFile: updates.activeFile }),
         ...(updates.panelType === 'browser' && { browserTabs: updates.browserTabs, activeTabId: updates.activeTabId }),
+        ...(updates.panelType === 'app' && { appCommand: updates.appCommand, appName: updates.appName, appRunState: 'starting' }),
       } as PanelState
 
       return syncPanelToSessionsPanels(state, panelId, () => newPanel)
+      })
+    },
+
+    /**
+     * 更新应用面板运行状态（由 AppPanel 组件监听主进程推送后调用）
+     * 保险丝：appCommand 为空的面板（旧版恢复链损坏的快照数据）不接受
+     * running 状态，避免"保存快照时把空命令持久化"的数据损坏循环。
+     */
+    updateAppPanelRunState: (panelId: string, runState: import('./types').AppPanelRunState, detail?: string) => set((state: AppState) => {
+      const panel = state.panels.find(p => p.id === panelId)
+      if (!panel || panel.panelType !== 'app') return state
+      if (runState === 'running' && !(panel as AppPanel).appCommand) return state
+      return syncPanelToSessionsPanels(state, panelId, p => ({
+        ...p,
+        appRunState: runState,
+        appRunDetail: detail,
+      }))
     }),
 
     saveSnapshot: async (sessionId: string, customLayout?: LayoutTree | null, customActivePanelId?: string | null) => {
@@ -538,11 +585,52 @@ export function createPanelLifecycleActions(set: SetFn, get: GetFn): Partial<App
           ...(p.panelType === 'terminal' && { ptyId: (p as TerminalPanel).ptyId, cwd: (p as TerminalPanel).cwd }),
           ...(p.panelType === 'file-browser' && { rootPath: (p as FileBrowserPanel).rootPath, currentPath: (p as FileBrowserPanel).currentPath, viewMode: (p as FileBrowserPanel).viewMode }),
           ...(p.panelType === 'browser' && { browserTabs: (p as BrowserPanel).browserTabs ? Array.from((p as BrowserPanel).browserTabs.values()) : undefined, activeTabId: (p as BrowserPanel).activeTabId }),
+          ...(p.panelType === 'app' && { appCommand: (p as AppPanel).appCommand, appName: (p as AppPanel).appName }),
           title: p.title,
         })),
       })
 
       window.dispatchEvent(new CustomEvent('panels-change'))
+    },
+
+    // ===== 应用面板生命周期（虚拟显示器嵌入） =====
+
+    createAppPanel: async (app: { appId: string; name: string; exec: string }) => {
+      const panelId = generatePanelId()
+      const panel: PanelState = {
+        id: panelId,
+        panelType: 'app',
+        title: `${t('panel.appPanel')} - ${app.name}`,
+        appCommand: app.exec,
+        appName: app.name,
+        appRunState: 'starting',
+      }
+      get().addPanel(panel)
+      await finalizePanelCreation(panelId, get)
+      return panelId
+    },
+
+    splitPanelWithAppPanel: async (
+      panelId: string,
+      direction: 'horizontal' | 'vertical',
+      app: { appId: string; name: string; exec: string },
+    ) => {
+      const newPanelId = generatePanelId()
+      const newPanel: PanelState = {
+        id: newPanelId,
+        panelType: 'app',
+        title: `${t('panel.appPanel')} - ${app.name}`,
+        appCommand: app.exec,
+        appName: app.name,
+        appRunState: 'starting',
+      }
+      get().splitPanel(panelId, direction, newPanel)
+
+      const state2 = get()
+      if (state2.activeSessionId !== null) {
+        await get().saveSnapshot(state2.activeSessionId, undefined, newPanelId)
+      }
+      return newPanelId
     },
 
     // ===== Nexus 连接管理 =====

@@ -14,6 +14,7 @@ import { useAppStore } from '../../store'
 import { usePanelDrag } from '../terminal/usePanelDrag'
 import { ReplacePanelIcons } from './ReplacePanelIcons'
 import { useI18n } from '../../i18n'
+import { activatePanel } from '../../utils/panel-focus'
 
 interface BasePanelProps {
   /** 面板唯一 ID */
@@ -44,10 +45,8 @@ export function BasePanel({
   const { t } = useI18n()
   const {
     activePanelId,
-    setActivePanelId,
     draggingPanelId,
     dropTargetPanelId,
-    panels,
     closePanel,
     showContextMenu,
   } = useAppStore()
@@ -66,23 +65,8 @@ export function BasePanel({
 
   // 点击面板选中
   const handleSelectPanel = () => {
-    // 若当前获得焦点的是非终端面板，通知失去焦点的终端清除视觉选区
-    // 需在 setActivePanelId 之前派发，确保能读取到旧的 activePanelId
-    const prevActivePanelId = useAppStore.getState().activePanelId
-    const prevActivePanel = prevActivePanelId
-      ? panels.find((p) => p.id === prevActivePanelId)
-      : null
-    if (prevActivePanel && prevActivePanel.panelType === 'terminal') {
-      window.dispatchEvent(
-        new CustomEvent('terminal-clear-selection', {
-          detail: { panelId: prevActivePanelId },
-        })
-      )
-    }
-
-    setActivePanelId(panelId)
-    // 通知终端面板获取输入焦点
-    window.dispatchEvent(new CustomEvent('terminal-focus', { detail: { panelId } }))
+    // 焦点切换逻辑统一收敛到 activatePanel，快捷键与鼠标点击行为保持一致
+    activatePanel(panelId)
   }
 
   // 关闭面板

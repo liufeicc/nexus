@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "setup": "node scripts/setup-platform.js",
+    "rebuild": "electron-rebuild -f -w better-sqlite3,node-pty",
     "build": "npm run setup && tsc && vite build && node scripts/build-mac.js",
     "build:win": "npm run setup && tsc && vite build && electron-builder --win",
     "build:linux": "npm run setup && tsc && vite build && electron-builder --linux",
     "build:mac": "npm run setup && tsc && vite build && node scripts/build-mac.js",
     "build:dir": "npm run setup && tsc && vite build && electron-builder --dir",
+    "build:win-panel": "bash resources/win-panel/build.sh",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
@@ -31,6 +33,7 @@
   "homepage": "https://github.com/liufei/Nexus",
   "license": "AGPL-3.0",
   "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.30",

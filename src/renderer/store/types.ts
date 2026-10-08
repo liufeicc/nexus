@@ -11,7 +11,7 @@ export type { LayoutTree, LayoutChild, PanelNode } from '@core/types'
 /**
  * 面板类型
  */
-export type PanelType = 'terminal' | 'file-browser' | 'browser'
+export type PanelType = 'terminal' | 'file-browser' | 'browser' | 'app'
 
 /** 已打开的文件条目 */
 export interface OpenFileEntry {
@@ -70,8 +70,28 @@ export interface BrowserPanel extends BasePanel {
   nexusConnected?: boolean
 }
 
+/**
+ * 应用面板运行状态（虚拟显示器嵌入，技术验证版）
+ * starting=正在启动虚拟显示器/程序 running=已嵌入运行 exited=程序已退出 error=启动失败
+ */
+export type AppPanelRunState = 'starting' | 'running' | 'exited' | 'error'
+
+/** 应用面板（在面板内嵌入运行桌面程序，如 dbeaver） */
+export interface AppPanel extends BasePanel {
+  panelType: 'app'
+  /** 要启动的程序命令（技术验证阶段固定 dbeaver） */
+  appCommand: string
+  /** 程序展示名称 */
+  appName: string
+  /** 运行状态 */
+  appRunState: AppPanelRunState
+  /** 状态附加信息（如错误原因） */
+  appRunDetail?: string
+  nexusConnected?: boolean
+}
+
 /** 面板状态（渲染进程运行时使用） */
-export type PanelState = TerminalPanel | FileBrowserPanel | BrowserPanel
+export type PanelState = TerminalPanel | FileBrowserPanel | BrowserPanel | AppPanel
 
 /**
  * 应用状态接口
@@ -106,6 +126,15 @@ export interface AppState {
 
   // 设置模态框
   settingsModalVisible: boolean
+
+  // 应用选择浮层（visible + 替换模式目标面板 + 分屏模式目标）
+  appPicker: {
+    visible: boolean
+    /** 非空时为"替换该面板"模式 */
+    replacePanelId: string | null
+    /** 非空时为"选中后按此分屏"模式（右键菜单分屏子菜单入口） */
+    split: { panelId: string; direction: 'horizontal' | 'vertical' } | null
+  }
 
   // 目录档案模态框
   nexusProfileModal: {
@@ -194,6 +223,9 @@ export interface AppState {
   // 截图占位图：key=browserPanelId, value=dataURL
   browserSnapshots: Map<string, string>
 
+  // 主窗口本地弹层（如主题下拉）打开中：应用面板原生容器需临时隐藏让路
+  domPopupOpen: boolean
+
   // 文件附件：当前待发送的附件列表
   attachedFiles: AttachedFile[]
 
@@ -233,7 +265,7 @@ export interface AppState {
   createPanel: (cwd: string) => Promise<string> // 创建 PTY + 面板，返回新面板 ID
   splitPanelWithPty: (panelId: string, direction: 'horizontal' | 'vertical', cwd: string) => Promise<string> // 分屏，返回新面板 ID
   closePanel: (panelId: string) => Promise<void> // 终止 PTY + 移除面板
-  restorePanelsFromData: (panelStates: Array<{ panelId: string; cwd?: string; title: string; panelType?: string; rootPath?: string; currentPath?: string; viewMode?: 'grid' | 'list'; url?: string; browserTabs?: BrowserTab[]; activeTabId?: string }>, layout?: LayoutTree | null) => Promise<void> // 从快照恢复（重建 PTY）
+  restorePanelsFromData: (panelStates: Array<{ panelId: string; cwd?: string; title: string; panelType?: string; rootPath?: string; currentPath?: string; viewMode?: 'grid' | 'list'; url?: string; browserTabs?: BrowserTab[]; activeTabId?: string; appCommand?: string; appName?: string }>, layout?: LayoutTree | null) => Promise<void> // 从快照恢复（重建 PTY）
 
   // 文件面板生命周期动作
   createFilePanel: (rootPath: string) => Promise<string> // 创建文件面板，返回新面板 ID
@@ -269,7 +301,28 @@ export interface AppState {
     activeFile?: string | null
     browserTabs?: Map<string, BrowserTab>
     activeTabId?: string | null
+    appCommand?: string
+    appName?: string
   }) => void
+
+  // 应用面板动作（虚拟显示器嵌入）
+  updateAppPanelRunState: (panelId: string, runState: AppPanelRunState, detail?: string) => void
+  createAppPanel: (app: { appId: string; name: string; exec: string }) => Promise<string>
+  splitPanelWithAppPanel: (panelId: string, direction: 'horizontal' | 'vertical', app: { appId: string; name: string; exec: string }) => Promise<string>
+
+  // 应用选择浮层动作
+  setAppPickerVisible: (
+    visible: boolean,
+    replacePanelId?: string | null,
+    split?: { panelId: string; direction: 'horizontal' | 'vertical' } | null,
+  ) => void
+
+  // 主窗口本地弹层让路：打开时隐藏应用面板原生容器（浏览器走截图机制）
+  setDomPopupOpen: (open: boolean) => void
+
+  // 工具条分屏模式（全局共享：分屏动作与应用面板选择共用）
+  splitMode: 'horizontal' | 'vertical'
+  setSplitMode: (mode: 'horizontal' | 'vertical') => void
 
   // 右键菜单动作
   showContextMenu: (x: number, y: number, selectedSessionId?: string, selectedPanelId?: string, hasTerminalSelection?: boolean, rightClickedFilePath?: string, rightClickedSelectedText?: string) => void

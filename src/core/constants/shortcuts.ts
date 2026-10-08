@@ -5,9 +5,13 @@
  * useGlobalEvents.ts 引用此文件进行匹配，避免硬编码。
  */
 
+/** 面板焦点移动方向（按面板在屏幕上的几何方位确定） */
+export type PanelFocusDirection = 'left' | 'right' | 'up' | 'down'
+
 /** 快捷键动作类型 */
 export type ShortcutAction =
   | { type: 'cycle-next-panel' }
+  | { type: 'focus-panel'; direction: PanelFocusDirection }
   | { type: 'close-modal' }
   | { type: 'copy' }
   | { type: 'paste' }
@@ -41,6 +45,32 @@ export const DEFAULT_SHORTCUTS: ShortcutDef[] = [
     match: (e) =>
       e.key === 'Tab' && e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey,
     action: { type: 'cycle-next-panel' },
+  },
+  {
+    // Alt+← 向左移动面板焦点
+    // 显式排除 Shift，避免与 Alt+Shift+方向键（文本选择）冲突
+    label: 'Alt+←',
+    match: (e) =>
+      e.key === 'ArrowLeft' && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey,
+    action: { type: 'focus-panel', direction: 'left' },
+  },
+  {
+    label: 'Alt+→',
+    match: (e) =>
+      e.key === 'ArrowRight' && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey,
+    action: { type: 'focus-panel', direction: 'right' },
+  },
+  {
+    label: 'Alt+↑',
+    match: (e) =>
+      e.key === 'ArrowUp' && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey,
+    action: { type: 'focus-panel', direction: 'up' },
+  },
+  {
+    label: 'Alt+↓',
+    match: (e) =>
+      e.key === 'ArrowDown' && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey,
+    action: { type: 'focus-panel', direction: 'down' },
   },
   {
     label: 'Ctrl+C',

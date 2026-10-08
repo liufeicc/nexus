@@ -52,7 +52,8 @@
     "nexusProfile": "Documentación del directorio",
     "noActiveSession": "Haga clic en el botón [+] en la parte inferior de la barra lateral para crear una nueva sesión primero",
     "confirmClosePanel": "Cerrar panel",
-    "confirmClosePanelMsg": "¿Estás seguro de que quieres cerrar este panel? Esta acción terminará el proceso del terminal."
+    "confirmClosePanelMsg": "¿Estás seguro de que quieres cerrar este panel? Esta acción terminará el proceso del terminal.",
+    "newApp": "Panel de aplicación"
   },
   "settings": {
     "title": "Configuración",
@@ -125,6 +126,7 @@
     "terminalPanel": "Panel de terminal",
     "filePanel": "Panel de archivos",
     "browserPanel": "Panel de navegador",
+    "appPanel": "Panel de aplicación",
     "new": "Nuevo"
   },
   "filePanel": {
@@ -245,38 +247,26 @@
   },
   "email": {
     "email": "Correo electrónico",
-    "emailEnabled": "Activar correo",
-    "emailEnabledDesc": "Activar la función de correo electrónico",
+    "emailEnabled": "Habilitar correo",
     "emailProvider": "Proveedor de correo",
-    "emailProviderDesc": "Seleccionar un proveedor predeterminado o elegir personalizado",
     "providerGmail": "Gmail",
     "providerQq": "QQ Mail",
     "provider163": "163 Mail",
     "providerOutlook": "Outlook",
     "providerCustom": "Personalizado",
     "emailAddress": "Dirección de correo",
-    "emailAddressDesc": "Su dirección de correo electrónico",
-    "displayName": "Nombre visible",
-    "displayNameDesc": "Nombre visible del remitente (opcional)",
-    "appPassword": "Código de autorización",
-    "appPasswordDesc": "Código de autorización o contraseña de aplicación (no la contraseña de inicio de sesión)",
+    "displayName": "Nombre para mostrar",
+    "appPassword": "Contraseña de aplicación",
     "imapServer": "Servidor IMAP",
-    "imapServerDesc": "Dirección del servidor de recepción",
     "imapPort": "Puerto IMAP",
-    "imapPortDesc": "Número de puerto del servidor de recepción",
     "imapSecure": "IMAP SSL",
-    "imapSecureDesc": "Usar conexión SSL/TLS",
     "smtpServer": "Servidor SMTP",
-    "smtpServerDesc": "Dirección del servidor de envío",
     "smtpPort": "Puerto SMTP",
-    "smtpPortDesc": "Número de puerto del servidor de envío",
     "smtpSecure": "SMTP SSL",
-    "smtpSecureDesc": "Usar conexión SSL/TLS",
     "emailTestConnection": "Probar conexión de correo",
-    "emailTestConnectionDesc": "Probar las conexiones IMAP y SMTP",
     "emailTestSuccess": "Conexión al servidor de correo exitosa",
-    "emailTestFailed": "Fallo en la conexión al servidor de correo",
-    "emailValidationFillFields": "Complete la dirección de correo y el código de autorización"
+    "emailTestFailed": "Conexión al servidor de correo fallida",
+    "emailValidationFillFields": "Complete la dirección de correo y la contraseña"
   },
   "browser": {
     "browserTitle": "Navegador",
@@ -320,7 +310,8 @@
     "closePanel": "Cerrar panel",
     "terminalPanel": "Panel de terminal",
     "filePanel": "Panel de archivos",
-    "browserPanel": "Panel de navegador"
+    "browserPanel": "Panel de navegador",
+    "appPanel": "Panel de aplicación"
   },
   "session": {
     "confirmDelete": "¿Estás seguro de que quieres eliminar la sesión \"{name}\"? Esta acción es irreversible.",
@@ -447,29 +438,6 @@
     "agentRunning": "El agente está ejecutándose, no se puede cambiar",
     "planDocument": "Plan"
   },
-  "email": {
-    "email": "Correo electrónico",
-    "emailEnabled": "Habilitar correo",
-    "emailProvider": "Proveedor de correo",
-    "providerGmail": "Gmail",
-    "providerQq": "QQ Mail",
-    "provider163": "163 Mail",
-    "providerOutlook": "Outlook",
-    "providerCustom": "Personalizado",
-    "emailAddress": "Dirección de correo",
-    "displayName": "Nombre para mostrar",
-    "appPassword": "Contraseña de aplicación",
-    "imapServer": "Servidor IMAP",
-    "imapPort": "Puerto IMAP",
-    "imapSecure": "IMAP SSL",
-    "smtpServer": "Servidor SMTP",
-    "smtpPort": "Puerto SMTP",
-    "smtpSecure": "SMTP SSL",
-    "emailTestConnection": "Probar conexión de correo",
-    "emailTestSuccess": "Conexión al servidor de correo exitosa",
-    "emailTestFailed": "Conexión al servidor de correo fallida",
-    "emailValidationFillFields": "Complete la dirección de correo y la contraseña"
-  },
   "onboarding": {
     "welcomeTitle": "Bienvenido a Nexus",
     "welcomeDesc": "Es tu primera vez lanzando Nexus. Configuremos el modelo de IA para que el asistente agente funcione correctamente.",
@@ -523,5 +491,19 @@
     "error": "Error de actualización: {error}",
     "disabledInDev": "Las actualizaciones están deshabilitadas en modo desarrollo",
     "notSupported": "Este tipo de paquete no admite actualizaciones automáticas"
+  },
+  "appPanel": {
+    "searchPlaceholder": "Buscar aplicaciones…",
+    "loupeToggle": "Lupa (clic central / clic para alternar apagado → seguir → fijado; arrastre el borde para redimensionar)",
+    "loupeUnavailable": "La lupa solo está disponible en modo escalado (se activa automáticamente en paneles pequeños)",
+    "empty": "No hay aplicaciones coincidentes",
+    "unsupported": "El panel de aplicación no es compatible",
+    "launchFailed": "Error al iniciar",
+    "starting": "Iniciando",
+    "exited": "Salió",
+    "relaunch": "Reabrir",
+    "retry": "Reintentar",
+    "pin": "Anclar arriba",
+    "unpin": "Desanclar"
   }
 }

@@ -233,6 +233,21 @@ export class BrowserViewService {
       return this.handleWindowOpen(instance, tabId, details)
     })
 
+    // 面板焦点方向切换：浏览器标签是原生 WebContentsView，
+    // 键盘焦点在页面内时渲染进程收不到按键，因此在这里捕获 Alt+方向键并转发。
+    const onBeforeInputForPanelNav = (event: Electron.Event, input: Electron.Input) => {
+      const direction = BrowserViewService.resolvePanelNavDirection(input)
+      if (!direction) return
+      // 标签被 Nexus 锁定时按键整体禁用（与右键菜单一致），不转发方向切换
+      if (instance.views.get(tabId)?.locked) return
+      event.preventDefault()
+      instance.window.webContents.send(IPC_CHANNELS.WINDOW_PANEL_NAV, direction)
+      // 把键盘焦点交还主窗口渲染进程，后续按键才能继续被全局快捷键处理
+      instance.window.webContents.focus()
+    }
+    view.webContents.on('before-input-event', onBeforeInputForPanelNav)
+    cleanup.push(() => view.webContents.removeListener('before-input-event', onBeforeInputForPanelNav))
+
     instance.views.set(tabId, {
       view, tabId, cleanup,
       locked: false, lockCssKey: null, lockInputHandler: null, lockNavHandlers: []
@@ -643,6 +658,35 @@ export class BrowserViewService {
       return result
     } catch (error: any) {
       return { success: false, message: `等待页面加载失败: ${error.message}` }
+    }
+  }
+
+  /**
+   * 判定按键是否为"面板焦点方向切换"组合键（Alt+方向键）
+   *
+   * 判定条件与渲染进程的全局快捷键定义保持一致：
+   * 必须按住 Alt（macOS 上为 Option），且不能同时按 Ctrl / Cmd / Shift。
+   *
+   * @param input before-input-event 提供的事件信息
+   * @returns 方向标识；不是该组合键时返回 null
+   */
+  private static resolvePanelNavDirection(
+    input: Electron.Input
+  ): 'left' | 'right' | 'up' | 'down' | null {
+    if (input.type !== 'keyDown') return null
+    if (!input.alt || input.control || input.meta || input.shift) return null
+
+    switch (input.key) {
+      case 'ArrowLeft':
+        return 'left'
+      case 'ArrowRight':
+        return 'right'
+      case 'ArrowUp':
+        return 'up'
+      case 'ArrowDown':
+        return 'down'
+      default:
+        return null
     }
   }
 

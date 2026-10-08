@@ -10,7 +10,7 @@ import type { LayoutTree } from './layout'
  */
 export interface SnapshotPanelState {
   panelId: string
-  panelType?: 'terminal' | 'file-browser' | 'browser'  // 可选，兼容旧快照
+  panelType?: 'terminal' | 'file-browser' | 'browser' | 'app'  // 可选，兼容旧快照
   ptyId?: string   // 终端面板需要，文件/浏览器面板不需要
   cwd?: string     // 终端面板的工作目录
   rootPath?: string  // 文件面板的根路径
@@ -19,6 +19,8 @@ export interface SnapshotPanelState {
   browserTabs?: Array<{ id: string; url: string; title: string; favicon?: string; isLoading: boolean }>  // 浏览器面板的标签列表
   activeTabId?: string | null  // 浏览器面板当前活动的标签 ID
   viewMode?: 'grid' | 'list'  // 文件面板的视图模式
+  appCommand?: string  // 应用面板的程序命令（如 dbeaver）
+  appName?: string     // 应用面板的程序展示名称
   title: string
 }
 

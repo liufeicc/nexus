@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
 import { useI18n } from '../../i18n'
 
 type UpdateStateType = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'not-available' | 'error'
@@ -30,15 +30,6 @@ export function AboutModal() {
       }).catch(() => {
         setAppVersion('V1.0.0')
       })
-    }
-  }, [aboutModalVisible])
-
-  // 弹窗打开时截图占位
-  React.useEffect(() => {
-    if (aboutModalVisible) {
-      captureAllBrowsersBeforeModal()
-    } else {
-      clearAllBrowserSnapshots()
     }
   }, [aboutModalVisible])
 

@@ -7,6 +7,7 @@ import { useAppStore, LayoutChild } from '../store'
 import { DEFAULT_SHORTCUTS, ShortcutAction } from '@core/constants/shortcuts'
 import { t } from '../i18n'
 import type { TerminalPanel, PanelState } from '../store/types'
+import { activatePanel, movePanelFocus } from '../utils/panel-focus'
 
 /**
  * 判断面板是否为终端面板
@@ -121,24 +122,15 @@ function executeShortcut(action: ShortcutAction): void {
       const nextIndex = (currentIndex + 1) % panelIds.length
       const nextPanelId = panelIds[nextIndex]
 
-      // 若当前面板是终端，通知其清除选区（与点击切换面板行为保持一致）
-      const currentPanel = state.panels.find((p) => p.id === currentPanelId)
-      if (currentPanel && currentPanel.panelType === 'terminal') {
-        window.dispatchEvent(
-          new CustomEvent('terminal-clear-selection', {
-            detail: { panelId: currentPanelId },
-          })
-        )
-      }
+      // 切换链路与鼠标点击面板保持一致（清除旧终端选区 + 通知新面板获取焦点）
+      activatePanel(nextPanelId)
 
-      state.setActivePanelId(nextPanelId)
+      break
+    }
 
-      // 通知新面板获取终端焦点
-      const focusEvent = new CustomEvent('terminal-focus', {
-        detail: { panelId: nextPanelId },
-      })
-      window.dispatchEvent(focusEvent)
-
+    case 'focus-panel': {
+      // Alt+方向键：按面板在屏幕上的几何方位移动焦点
+      movePanelFocus(action.direction)
       break
     }
 

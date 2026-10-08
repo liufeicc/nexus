@@ -3,9 +3,10 @@
  */
 
 import React from 'react'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
 import type { Session } from '@core/types'
 import { useI18n } from '../../i18n'
+import { emitBridgeEvent } from '../../overlay/overlay-utils'
 
 /**
  * 重命名对话框
@@ -16,7 +17,7 @@ export function RenameModal() {
   const [name, setName] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement>(null)
 
-  // 当对话框打开时，更新名称并全选文本 + 截图占位
+  // 当对话框打开时，更新名称并全选文本
   React.useEffect(() => {
     if (renameModal?.visible) {
       setName(renameModal.sessionName || '')
@@ -25,11 +26,6 @@ export function RenameModal() {
         inputRef.current?.focus()
         inputRef.current?.select()
       }, 0)
-      // 截图占位
-      captureAllBrowsersBeforeModal()
-    } else {
-      // 关闭时清除截图
-      clearAllBrowserSnapshots()
     }
   }, [renameModal?.visible, renameModal?.sessionId])
 
@@ -46,7 +42,8 @@ export function RenameModal() {
       await window.electronAPI.session.update(renameModal.sessionId!, name)
       const sessions = await window.electronAPI.session.list()
       setSessionIds(sessions.map((s: Session) => s.id))
-      window.dispatchEvent(new CustomEvent('sessions-change'))
+      // 跨窗口中继：主窗口侧边栏监听该事件刷新会话列表
+      emitBridgeEvent('sessions-change')
       hideRenameModal()
     } catch (error) {
       console.error('[RenameModal] 重命名会话失败:', error)

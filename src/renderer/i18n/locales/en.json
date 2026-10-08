@@ -52,7 +52,8 @@
     "nexusProfile": "Directory docs",
     "noActiveSession": "Please click the [+] button at the bottom of the left sidebar to create a new session first",
     "confirmClosePanel": "Close panel",
-    "confirmClosePanelMsg": "Are you sure you want to close this panel? This action will terminate the terminal process."
+    "confirmClosePanelMsg": "Are you sure you want to close this panel? This action will terminate the terminal process.",
+    "newApp": "App panel"
   },
   "settings": {
     "title": "Settings",
@@ -158,6 +159,7 @@
     "terminalPanel": "Terminal panel",
     "filePanel": "File panel",
     "browserPanel": "Browser panel",
+    "appPanel": "App panel",
     "new": "New"
   },
   "filePanel": {
@@ -318,7 +320,8 @@
     "closePanel": "Close panel",
     "terminalPanel": "Terminal panel",
     "filePanel": "File panel",
-    "browserPanel": "Browser panel"
+    "browserPanel": "Browser panel",
+    "appPanel": "App panel"
   },
   "session": {
     "confirmDelete": "Are you sure you want to delete session \"{name}\"? This action cannot be undone.",
@@ -509,10 +512,6 @@
     "license": "License",
     "licenseName": "GNU General Public License v3.0"
   },
-  "nexus": {
-    "connected": "Connected to Nexus",
-    "disconnected": "Disconnected from Nexus"
-  },
   "update": {
     "checkForUpdates": "Check for Updates",
     "checking": "Checking for updates...",
@@ -526,5 +525,19 @@
     "error": "Update error: {error}",
     "disabledInDev": "Updates are disabled in development mode",
     "notSupported": "This package type does not support auto-updates"
+  },
+  "appPanel": {
+    "searchPlaceholder": "Search apps…",
+    "loupeToggle": "Magnifier (middle-click / click to cycle off → follow → pinned; drag border to resize when pinned)",
+    "loupeUnavailable": "Magnifier is only available in scale mode (enabled automatically for small panels)",
+    "empty": "No matching apps",
+    "unsupported": "App panel is not supported in this environment",
+    "launchFailed": "Launch failed",
+    "starting": "Starting",
+    "exited": "Exited",
+    "relaunch": "Reopen",
+    "retry": "Retry",
+    "pin": "Pin to top",
+    "unpin": "Unpin"
   }
 }

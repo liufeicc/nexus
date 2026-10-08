@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useRef } from 'react'
-import { useAppStore, clearAllBrowserSnapshots, captureAllBrowsersBeforeModal } from '../../store'
+import { useAppStore } from '../../store'
 
 interface UseBrowserViewSyncParams {
   panelId: string
@@ -20,7 +20,9 @@ export function useBrowserViewSync({
   activeTabId,
   contentRef,
 }: UseBrowserViewSyncParams): void {
-  const { contextMenu, renameModal, confirmModal, pathSelectorModal, fileRenameModal, approvalModal, clarifyModal, nexusProfileModal, settingsModalVisible, aboutModalVisible, browserSnapshots } = useAppStore()
+  // 模态框已迁移至共享置顶弹层窗口（浮于原生层之上），无需再为其隐藏；
+  // 仅主窗口本地弹层（如书签下拉框）通过 browserSnapshots 触发隐藏
+  const { browserSnapshots } = useAppStore()
 
   /**
    * 计算并更新当前活动标签的 WebContentsView 边界
@@ -53,34 +55,8 @@ export function useBrowserViewSync({
     return () => observer.disconnect()
   }, [updateBrowserBounds])
 
-  // 判断是否有任何模态框/菜单可见
-  const isAnyModalVisible = !!(
-    contextMenu?.visible ||
-    renameModal?.visible ||
-    confirmModal?.visible ||
-    pathSelectorModal?.visible ||
-    fileRenameModal?.visible ||
-    approvalModal?.visible ||
-    clarifyModal?.visible ||
-    nexusProfileModal?.visible ||
-    settingsModalVisible ||
-    aboutModalVisible
-  )
-
-  // 右键菜单/弹窗截图：任意 modal 可见时对所有浏览器面板截图
-  const wasAnyModalVisibleRef = useRef(false)
-  useEffect(() => {
-    if (isAnyModalVisible && !wasAnyModalVisibleRef.current) {
-      wasAnyModalVisibleRef.current = true
-      captureAllBrowsersBeforeModal()
-    } else if (!isAnyModalVisible && wasAnyModalVisibleRef.current) {
-      wasAnyModalVisibleRef.current = false
-      clearAllBrowserSnapshots()
-    }
-  }, [isAnyModalVisible])
-
-  // 隐藏/恢复 WebContentsView：有截图快照或有任意 modal 可见时隐藏
-  const shouldHideView = browserSnapshots.has(panelId) || isAnyModalVisible
+  // 隐藏/恢复 WebContentsView：仅主窗口本地弹层（browserSnapshots）触发隐藏
+  const shouldHideView = browserSnapshots.has(panelId)
   const wasHiddenRef = useRef(false)
 
   useEffect(() => {
@@ -104,5 +80,5 @@ export function useBrowserViewSync({
         height: Math.round(rect.height),
       })
     }
-  }, [panelId, shouldHideView, activeTabId, contentRef, isAnyModalVisible])
+  }, [panelId, shouldHideView, activeTabId, contentRef])
 }

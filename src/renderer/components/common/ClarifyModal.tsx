@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useI18n } from '../../i18n'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
 
 export function ClarifyModal() {
   const { t } = useI18n()
@@ -47,15 +47,6 @@ export function ClarifyModal() {
   handleSubmitRef.current = handleSubmit
   const handleCancelRef = useRef(handleCancel)
   handleCancelRef.current = handleCancel
-
-  // 弹窗打开时截图占位
-  useEffect(() => {
-    if (clarifyModal?.visible) {
-      captureAllBrowsersBeforeModal()
-    } else {
-      clearAllBrowserSnapshots()
-    }
-  }, [clarifyModal?.visible])
 
   // 弹窗打开/关闭时重置内部状态
   useEffect(() => {

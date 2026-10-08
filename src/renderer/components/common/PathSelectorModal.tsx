@@ -4,7 +4,8 @@
 
 import React from 'react'
 import { createPortal } from 'react-dom'
-import { useAppStore, captureAllBrowsersBeforeModal, clearAllBrowserSnapshots } from '../../store'
+import { useAppStore } from '../../store'
+import { callMaybeCallback } from '../../overlay/overlay-utils'
 import { getBasename } from '../../../core/utils/path-utils'
 import { useI18n } from '../../i18n'
 
@@ -45,17 +46,12 @@ export function PathSelectorModal() {
     loadCommonPaths()
   }, [])
 
-  // 对话框打开时，自动聚焦输入框 + 截图占位
+  // 对话框打开时，自动聚焦输入框
   React.useEffect(() => {
     if (pathSelectorModal?.visible) {
       setTimeout(() => {
         inputRef.current?.focus()
       }, 100)
-      // 截图占位
-      captureAllBrowsersBeforeModal()
-    } else {
-      // 关闭时清除截图
-      clearAllBrowserSnapshots()
     }
   }, [pathSelectorModal?.visible])
 
@@ -176,7 +172,7 @@ export function PathSelectorModal() {
     }
   }
 
-  // 保存路径到常用位置
+  // 保存路径到常用位置（上限 100 条，新路径置顶）
   const saveToCommonPaths = async (path: string) => {
     try {
       const savedPaths = await window.electronAPI.config.get('commonPaths')
@@ -189,12 +185,29 @@ export function PathSelectorModal() {
           path,
           icon: '📁',
         }
-        const updatedPaths = [newPath, ...currentPaths].slice(0, 10)
+        const updatedPaths = [newPath, ...currentPaths].slice(0, 100)
         await window.electronAPI.config.save('commonPaths', updatedPaths)
         setCommonPaths(updatedPaths)
       }
     } catch (error) {
       console.error('[PathSelectorModal] 保存路径失败:', error)
+    }
+  }
+
+  // 最近使用置顶：把点击选择过的路径提升到列表最上方并持久化
+  const movePathToTop = async (path: string) => {
+    try {
+      const savedPaths = await window.electronAPI.config.get('commonPaths')
+      const currentPaths = Array.isArray(savedPaths) ? savedPaths : []
+      // 已在最上方或不存在则无需处理
+      if (currentPaths.length === 0 || currentPaths[0]?.path === path) return
+      const target = currentPaths.find((p) => p.path === path)
+      if (!target) return
+      const updatedPaths = [target, ...currentPaths.filter((p) => p.path !== path)]
+      await window.electronAPI.config.save('commonPaths', updatedPaths)
+      setCommonPaths(updatedPaths)
+    } catch (error) {
+      console.error('[PathSelectorModal] 路径置顶失败:', error)
     }
   }
 
@@ -221,7 +234,9 @@ export function PathSelectorModal() {
 
     // 使用主进程展开后的绝对路径（~ → /home/user）
     const resolvedPath = result.path || path
-    pathSelectorModal.onConfirm?.(resolvedPath)
+    // 最近使用置顶：异步持久化，不阻塞确认流程
+    movePathToTop(resolvedPath)
+    callMaybeCallback(pathSelectorModal.onConfirm, resolvedPath)
     hidePathSelectorModal()
   }
 
@@ -236,7 +251,7 @@ export function PathSelectorModal() {
 
       // 使用主进程展开后的绝对路径（~ → /home/user）
       const resolvedPath = result.path || trimmedPath
-      pathSelectorModal.onConfirm?.(resolvedPath)
+      callMaybeCallback(pathSelectorModal.onConfirm, resolvedPath)
       saveToCommonPaths(resolvedPath)
     }
     hidePathSelectorModal()

@@ -57,6 +57,7 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
         'dynamic-island': path.resolve(__dirname, 'dynamic-island.html'),
         onboarding: path.resolve(__dirname, 'onboarding.html'),
+        overlay: path.resolve(__dirname, 'overlay.html'),
       },
     },
     outDir: 'dist/renderer',
